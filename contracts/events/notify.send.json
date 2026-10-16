@@ -1,0 +1,49 @@
+{
+  "description": "notify.send：请通知服务给某个用户发通知（NTF-01）。",
+  "properties": {
+    "idempotencyKey": {
+      "description": "同一键只投递一次，如 m1:booking:123:remind-before",
+      "title": "Idempotencykey",
+      "type": "string"
+    },
+    "recipientUserId": {
+      "title": "Recipientuserid",
+      "type": "integer"
+    },
+    "event": {
+      "description": "事件类型，决定模板，如 m1.booking.reminder",
+      "title": "Event",
+      "type": "string"
+    },
+    "summary": {
+      "description": "无模板时直接使用的通知正文",
+      "title": "Summary",
+      "type": "string"
+    },
+    "variables": {
+      "additionalProperties": true,
+      "description": "模板变量",
+      "title": "Variables",
+      "type": "object"
+    },
+    "channels": {
+      "items": {
+        "enum": [
+          "email",
+          "inbox"
+        ],
+        "type": "string"
+      },
+      "title": "Channels",
+      "type": "array"
+    }
+  },
+  "required": [
+    "idempotencyKey",
+    "recipientUserId",
+    "event",
+    "summary"
+  ],
+  "title": "NotifySend",
+  "type": "object"
+}

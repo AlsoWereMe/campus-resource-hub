@@ -1,0 +1,65 @@
+{
+  "description": "m3.workorder.repairing / completed / closed（M3-INT-04）。",
+  "properties": {
+    "workOrderId": {
+      "title": "Workorderid",
+      "type": "integer"
+    },
+    "status": {
+      "title": "Status",
+      "type": "string"
+    },
+    "buildingId": {
+      "title": "Buildingid",
+      "type": "integer"
+    },
+    "roomId": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Roomid"
+    },
+    "impactScope": {
+      "anyOf": [
+        {
+          "enum": [
+            "ROOM",
+            "SEATS"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Impactscope"
+    },
+    "seatIds": {
+      "items": {
+        "type": "integer"
+      },
+      "title": "Seatids",
+      "type": "array"
+    },
+    "occurredAt": {
+      "format": "date-time",
+      "title": "Occurredat",
+      "type": "string"
+    }
+  },
+  "required": [
+    "workOrderId",
+    "status",
+    "buildingId",
+    "roomId",
+    "impactScope",
+    "occurredAt"
+  ],
+  "title": "WorkOrderEvent",
+  "type": "object"
+}

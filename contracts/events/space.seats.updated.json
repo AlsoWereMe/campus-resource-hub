@@ -1,0 +1,99 @@
+{
+  "$defs": {
+    "SeatInfo": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "integer"
+        },
+        "roomId": {
+          "title": "Roomid",
+          "type": "integer"
+        },
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/Status"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Row"
+        },
+        "col": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Col"
+        }
+      },
+      "required": [
+        "id",
+        "roomId",
+        "code",
+        "status"
+      ],
+      "title": "SeatInfo",
+      "type": "object"
+    },
+    "Status": {
+      "enum": [
+        "ENABLED",
+        "DISABLED",
+        "DELETED"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "description": "space.seats.updated：座位状态、标记等变化后发布受影响座位的快照（SPC-EVT-01）。",
+  "properties": {
+    "roomId": {
+      "title": "Roomid",
+      "type": "integer"
+    },
+    "seats": {
+      "items": {
+        "$ref": "#/$defs/SeatInfo"
+      },
+      "title": "Seats",
+      "type": "array"
+    },
+    "changedFields": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Changedfields",
+      "type": "array"
+    }
+  },
+  "required": [
+    "roomId",
+    "seats",
+    "changedFields"
+  ],
+  "title": "SpaceSeatsUpdated",
+  "type": "object"
+}

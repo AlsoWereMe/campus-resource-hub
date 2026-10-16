@@ -1,0 +1,11 @@
+openapi: 3.1.0
+info:
+  title: audit API
+  version: v1
+paths: {}
+components:
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      description: IAM 签发的访问令牌
+      scheme: bearer

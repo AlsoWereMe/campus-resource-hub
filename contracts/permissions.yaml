@@ -1,0 +1,229 @@
+permissions:
+  iam:user:manage: 用户、批量导入、停用
+  iam:role:manage: 角色、权限、授权与数据范围
+  iam:user:query: 按角色与范围查询用户（服务）
+  space:read: 查看校区、楼宇、房间、座位
+  space:room:manage: 维护房间、自习开放、开放时间、整间预约属性
+  space:seat:manage: 维护座位、停用与恢复
+  space:tag:manage: 维护标记字典、为座位打标记
+  notify:template:manage: 维护通知模板
+  notify:delivery:view: 查看通知投递记录
+  audit:log:view: 查询审计记录
+  m1:seat:search: 浏览自习室、搜索座位、查看时间轴
+  m1:booking:create: 创建预约
+  m1:booking:cancel-own: 取消本人预约
+  m1:booking:view-own: 查看本人预约与历史
+  m1:checkin:do: 签到、签退
+  m1:violation:view-own: 查看本人违约
+  m1:booking:view-all: 查看范围内预约明细
+  m1:booking:cancel-any: 处置范围内预约
+  m1:checkin:manual: 管理员补签
+  m1:violation:view-all: 查看范围内违约
+  m1:violation:revoke: 撤销违约
+  m1:stats:view: 运营看板与统计
+  m1:stats:export: 导出明细与统计
+  m1:screen:manage: 生成、吊销屏幕设备令牌
+  m1:trace:view: 座位状态来源追溯
+  m1:setting:manage: 修改 M1 业务参数
+  m1:block:write: 写入、释放占用块（服务）
+  m1:violation:summary: 查询学生违约摘要（服务）
+  m2:room:search: 检索可申请房间、查看占用日历
+  m2:application:create: 提交整间申请
+  m2:application:manage-own: 查看、撤回、取消本人申请
+  m2:approval:act: 审批（受级别角色与数据范围约束）
+  m2:application:view-all: 查看范围内全部申请
+  m2:application:revoke: 撤销已通过的申请
+  m2:flow:manage: 维护审批链与 M2 参数
+  m2:writeback:retry: 手动重试写回
+  m2:stats:view: M2 统计
+  m3:workorder:create: 上报故障
+  m3:workorder:manage-own: 查看、取消、验收、评价本人工单
+  m3:dispatch:act: 派单、改派、关闭、代验收、调整影响范围
+  m3:repair:act: 开始维修、进度备注、完工、退回、调整影响范围
+  m3:workorder:view-all: 查看范围内全部工单
+  m3:escalation:handle: 处理升级工单
+  m3:stats:view: M3 统计
+  m3:config:manage: 维护故障类别与处理时限
+  m3:writeback:retry: 手动重试写回
+roles:
+- code: student
+  name: 学生
+  description: 预约座位、签到、报修
+  defaultScope: SELF
+  permissions:
+  - space:read
+  - m1:seat:search
+  - m1:booking:create
+  - m1:booking:cancel-own
+  - m1:booking:view-own
+  - m1:checkin:do
+  - m1:violation:view-own
+  - m3:workorder:create
+  - m3:workorder:manage-own
+- code: staff
+  name: 教职工
+  description: 整间申请、报修
+  defaultScope: SELF
+  permissions:
+  - space:read
+  - m2:room:search
+  - m2:application:create
+  - m2:application:manage-own
+  - m3:workorder:create
+  - m3:workorder:manage-own
+- code: student_leader
+  name: 学生组织负责人
+  description: 由系统管理员授予学生，可提交整间申请
+  defaultScope: SELF
+  permissions:
+  - m2:room:search
+  - m2:application:create
+  - m2:application:manage-own
+- code: dept_approver
+  name: 院系审批人
+  description: 审批与本院系相关的整间申请级别
+  defaultScope: DEPARTMENT
+  permissions:
+  - space:read
+  - m2:room:search
+  - m2:approval:act
+- code: room_admin
+  name: 教室管理员
+  description: 管理范围内的自习室与座位，处理异常预约，审批范围内房间的整间申请
+  defaultScope: BUILDING
+  permissions:
+  - space:read
+  - space:room:manage
+  - space:seat:manage
+  - space:tag:manage
+  - m1:seat:search
+  - m1:booking:view-all
+  - m1:booking:cancel-any
+  - m1:checkin:manual
+  - m1:violation:view-all
+  - m1:violation:revoke
+  - m1:stats:view
+  - m1:screen:manage
+  - m1:trace:view
+  - m2:room:search
+  - m2:approval:act
+  - m2:application:view-all
+  - notify:delivery:view
+- code: resource_admin
+  name: 资源管理员
+  description: 整间申请校级终审，可撤销已通过的申请
+  defaultScope: ALL
+  permissions:
+  - space:read
+  - m2:room:search
+  - m2:approval:act
+  - m2:application:view-all
+  - m2:application:revoke
+  - m2:stats:view
+- code: ops_admin
+  name: 运营管理员
+  description: 只读查看预约情况与统计
+  defaultScope: ALL
+  permissions:
+  - space:read
+  - m1:seat:search
+  - m1:booking:view-all
+  - m1:violation:view-all
+  - m1:stats:view
+  - m1:stats:export
+  - m1:trace:view
+  - notify:delivery:view
+- code: dispatcher
+  name: 物业调度员
+  description: 受理派单、改派、关闭、代验收
+  defaultScope: BUILDING
+  permissions:
+  - space:read
+  - m3:workorder:create
+  - m3:workorder:manage-own
+  - m3:dispatch:act
+  - m3:workorder:view-all
+- code: technician
+  name: 维修人员
+  description: 处理派给自己的工单
+  defaultScope: BUILDING
+  permissions:
+  - space:read
+  - m3:workorder:create
+  - m3:workorder:manage-own
+  - m3:repair:act
+- code: property_supervisor
+  name: 物业主管
+  description: 升级工单的接收人，查看全部工单与统计
+  defaultScope: ALL
+  permissions:
+  - space:read
+  - m3:workorder:create
+  - m3:workorder:manage-own
+  - m3:dispatch:act
+  - m3:workorder:view-all
+  - m3:escalation:handle
+  - m3:stats:view
+- code: sys_admin
+  name: 系统管理员
+  description: 管理全部配置、角色、权限、用户；不可删除
+  defaultScope: ALL
+  permissions:
+  - iam:user:manage
+  - iam:role:manage
+  - space:read
+  - space:room:manage
+  - space:seat:manage
+  - space:tag:manage
+  - notify:template:manage
+  - notify:delivery:view
+  - audit:log:view
+  - m1:seat:search
+  - m1:booking:create
+  - m1:booking:cancel-own
+  - m1:booking:view-own
+  - m1:checkin:do
+  - m1:violation:view-own
+  - m1:booking:view-all
+  - m1:booking:cancel-any
+  - m1:checkin:manual
+  - m1:violation:view-all
+  - m1:violation:revoke
+  - m1:stats:view
+  - m1:stats:export
+  - m1:screen:manage
+  - m1:trace:view
+  - m1:setting:manage
+  - m2:room:search
+  - m2:application:create
+  - m2:application:manage-own
+  - m2:approval:act
+  - m2:application:view-all
+  - m2:application:revoke
+  - m2:flow:manage
+  - m2:writeback:retry
+  - m2:stats:view
+  - m3:workorder:create
+  - m3:workorder:manage-own
+  - m3:dispatch:act
+  - m3:repair:act
+  - m3:workorder:view-all
+  - m3:escalation:handle
+  - m3:stats:view
+  - m3:config:manage
+  - m3:writeback:retry
+serviceClients:
+  platform:
+  - space:read
+  seat:
+  - space:read
+  - iam:user:query
+  room:
+  - space:read
+  - iam:user:query
+  - m1:block:write
+  - m1:violation:summary
+  repair:
+  - space:read
+  - iam:user:query
+  - m1:block:write
