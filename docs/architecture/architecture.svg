@@ -1,0 +1,346 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1262" width="1600" height="1262" role="img" aria-labelledby="ttl desc">
+<title id="ttl">校园资源服务平台 · 抽象架构图</title>
+<desc id="desc">五层架构：客户端层、接入层、业务服务层（M1/M2/M3）、公共服务层 D、数据与中间件层，右侧为交付与运行支撑。</desc>
+<style>
+    text{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC",sans-serif;fill:#1f2937}
+    .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+    .page{fill:#ffffff}
+    .layer{fill:#f6f7f9;stroke:#d5dae1;stroke-width:1}
+    .lt{font-size:16px;font-weight:700}
+    .ls{font-size:12.5px;fill:#5b6472}
+    .h{font-size:15px;font-weight:700}
+    .t{font-size:12.5px}
+    .tm{font-size:12px;fill:#5b6472}
+    .tt{font-size:11.5px;fill:#5b6472}
+    .card{fill:#ffffff;stroke:#a7b1bf;stroke-width:1}
+    .ar{stroke:#4b5563;stroke-width:1.6;fill:none}
+    .ar.async{stroke-dasharray:6 4}
+    .ah{fill:#4b5563}
+    
+    .box-m1{fill:#eaf2ff;stroke:#1d5fd1;stroke-width:1.4}
+    .chip-m1{fill:#ffffff;stroke:#a9c5f3;stroke-width:1}
+    .c-m1{fill:#1d5fd1}
+    .dot-m1{fill:#1d5fd1}
+    .box-m2{fill:#e9f7ee;stroke:#178048;stroke-width:1.4}
+    .chip-m2{fill:#ffffff;stroke:#a6dbbb;stroke-width:1}
+    .c-m2{fill:#178048}
+    .dot-m2{fill:#178048}
+    .box-m3{fill:#fff3e3;stroke:#b8650f;stroke-width:1.4}
+    .chip-m3{fill:#ffffff;stroke:#f0c896;stroke-width:1}
+    .c-m3{fill:#b8650f}
+    .dot-m3{fill:#b8650f}
+    .box-d{fill:#f2ecfd;stroke:#6a3fc8;stroke-width:1.4}
+    .chip-d{fill:#ffffff;stroke:#cdbbf2;stroke-width:1}
+    .c-d{fill:#6a3fc8}
+    .dot-d{fill:#6a3fc8}
+    .box-x{fill:#eef1f4;stroke:#5d6876;stroke-width:1.4}
+    .chip-x{fill:#ffffff;stroke:#c3cad3;stroke-width:1}
+    .c-x{fill:#5d6876}
+    .dot-x{fill:#5d6876}
+    .hl-m1{fill:#d8e6ff;stroke:#1d5fd1;stroke-width:1.4}
+    .hl-m2{fill:#d3f0de;stroke:#178048;stroke-width:1.4}
+    .hl-m3{fill:#ffe6c4;stroke:#b8650f;stroke-width:1.4}</style>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="ahs" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+<rect x="0" y="0" width="1600" height="1262" rx="0" class="page"/>
+<rect x="40" y="90" width="1180" height="200" rx="10" class="layer"/>
+<rect x="40" y="340" width="1180" height="78" rx="10" class="layer"/>
+<rect x="40" y="468" width="1180" height="304" rx="10" class="layer"/>
+<rect x="40" y="822" width="1180" height="170" rx="10" class="layer"/>
+<rect x="40" y="1040" width="1180" height="140" rx="10" class="layer"/>
+<rect x="1250" y="90" width="310" height="1090" rx="10" class="layer"/>
+<text x="40" y="46" class="h" style="font-size:24px">校园资源服务平台 · 抽象架构图</text>
+<text x="40" y="72" class="t"><tspan class="ls">v0.1 · 2026-10-17 · 颜色表示建议归属：</tspan><tspan class="c-m1">■ M1 </tspan><tspan class="c-m2">■ M2 </tspan><tspan class="c-m3">■ M3 </tspan><tspan class="c-d">■ 公共层 D </tspan><tspan class="c-x">■ 基础设施</tspan></text>
+<text x="60" y="116" class="t"><tspan class="lt">① 客户端层</tspan><tspan class="ls">    Web 前端为单一工程、按模块划分页面目录；Agent 为附加项，独立于前端</tspan></text>
+<rect x="60" y="130" width="273" height="104" rx="8" class="card"/>
+<text x="74" y="153" class="h">学生端（移动优先 H5）</text>
+<circle cx="78" cy="172.5" r="4" class="dot-m1"/>
+<text x="88" y="177" class="t">座位检索 · 预约 · 签到 · 历史 · 违约</text>
+<circle cx="78" cy="193.5" r="4" class="dot-m2"/>
+<text x="88" y="198" class="t">整教室申请 · 进度 · 撤销</text>
+<circle cx="78" cy="214.5" r="4" class="dot-m3"/>
+<text x="88" y="219" class="t">故障上报 · 进度 · 验收评价</text>
+<rect x="349" y="130" width="273" height="104" rx="8" class="card"/>
+<text x="363" y="153" class="h">管理后台（桌面）</text>
+<circle cx="367" cy="172.5" r="4" class="dot-d"/>
+<text x="377" y="177" class="t">用户 · 角色权限 · 空间座位 · 审计</text>
+<circle cx="367" cy="193.5" r="4" class="dot-m1"/>
+<text x="377" y="198" class="t">参数 · 运营看板 · 违约 · 状态追溯</text>
+<rect x="638" y="130" width="273" height="104" rx="8" class="card"/>
+<text x="652" y="153" class="h">自习室屏幕端（全屏）</text>
+<circle cx="656" cy="172.5" r="4" class="dot-m1"/>
+<text x="666" y="177" class="t">签到码 / 二维码轮换展示</text>
+<circle cx="656" cy="193.5" r="4" class="dot-m1"/>
+<text x="666" y="198" class="t">设备令牌，只读本室签到码</text>
+<circle cx="656" cy="214.5" r="4" class="dot-m1"/>
+<text x="666" y="219" class="t">自动刷新，换码 ≤ 30 秒可见</text>
+<circle cx="367" cy="214.5" r="4" class="dot-m2"/>
+<text x="377" y="219" class="t">审批工作台</text>
+<circle cx="481" cy="214.5" r="4" class="dot-m3"/>
+<text x="491" y="219" class="t">派单与工单监控</text>
+<rect x="927" y="130" width="273" height="144" rx="8" class="box-x"/>
+<text x="941" y="153" class="h">会话代理 Agent（附加项）</text>
+<circle cx="945" cy="172.5" r="4" class="dot-x"/>
+<text x="955" y="177" class="t">DSH 插件，安装配置纳入流水线</text>
+<circle cx="945" cy="193.5" r="4" class="dot-x"/>
+<text x="955" y="198" class="t">意图不明确时追问，不擅自执行</text>
+<circle cx="945" cy="214.5" r="4" class="dot-x"/>
+<text x="955" y="219" class="t">只调用各模块公开 API</text>
+<circle cx="945" cy="235.5" r="4" class="dot-x"/>
+<text x="955" y="240" class="t">不访问任何模块的数据库</text>
+<rect x="60" y="244" width="851" height="34" rx="6" class="box-d"/>
+<text x="74" y="266" class="t"><tspan class="c-d">前端公共壳 </tspan>登录态与令牌刷新 · 按权限生成菜单 · 由 OpenAPI 生成的 API Client · 统一错误处理 · 版本号显示</text>
+<path d="M300,278 L300,338" class="ar" marker-end="url(#ah)"/>
+<text x="310" y="314" class="tt">HTTPS · REST/JSON · Bearer JWT</text>
+<path d="M700,278 L700,338" class="ar" marker-end="url(#ah)"/>
+<text x="710" y="314" class="tt">HTTPS 轮询 · 设备令牌</text>
+<path d="M1063,274 L1063,338" class="ar" marker-end="url(#ah)"/>
+<text x="1053" y="314" class="tt" text-anchor="end">公开 API · 用户委托令牌</text>
+<text x="60" y="366" class="t"><tspan class="lt">② 接入层</tspan><tspan class="ls">    Nginx 反向代理（无业务逻辑）</tspan></text>
+<rect x="60" y="378" width="80" height="28" rx="6" class="chip-x"/>
+<text x="100.0" y="396.5" class="t" text-anchor="middle">TLS 终止</text>
+<rect x="148" y="378" width="100" height="28" rx="6" class="chip-x"/>
+<text x="198.0" y="396.5" class="t" text-anchor="middle">静态资源托管</text>
+<rect x="256" y="378" width="206" height="28" rx="6" class="chip-x"/>
+<text x="359.0" y="396.5" class="t" text-anchor="middle">/api/{模块}/v1/** 按前缀路由</text>
+<rect x="470" y="378" width="160" height="28" rx="6" class="chip-x"/>
+<text x="550.0" y="396.5" class="t" text-anchor="middle">对外屏蔽 /internal/**</text>
+<rect x="638" y="378" width="118" height="28" rx="6" class="chip-x"/>
+<text x="697.0" y="396.5" class="t" text-anchor="middle">登录 / 签到限流</text>
+<rect x="764" y="378" width="100" height="28" rx="6" class="chip-x"/>
+<text x="814.0" y="396.5" class="t" text-anchor="middle">注入 traceId</text>
+<rect x="872" y="378" width="250" height="28" rx="6" class="chip-x"/>
+<text x="997.0" y="396.5" class="t" text-anchor="middle">不做鉴权：各服务以 JWKS 本地验签</text>
+<path d="M191,418 L191,466" class="ar" marker-end="url(#ah)"/>
+<path d="M620,418 L620,466" class="ar" marker-end="url(#ah)"/>
+<path d="M1049,418 L1049,466" class="ar" marker-end="url(#ah)"/>
+<text x="634" y="452" class="tt">HTTP（内网）· 按路径前缀转发 · 透传用户 JWT</text>
+<path d="M1203,418 L1203,820" class="ar" marker-end="url(#ah)"/>
+<text x="1196" y="452" class="tt" text-anchor="end">→ 公共层 D 公开 API</text>
+<text x="60" y="494" class="t"><tspan class="lt">③ 业务服务层</tspan><tspan class="ls">    每个模块一个独立服务：独立进程 · 独立 schema · 独立 OpenAPI；服务内分层 API → 应用 → 领域 → 基础设施</tspan></text>
+<rect x="60" y="508" width="262" height="250" rx="8" class="box-m2"/>
+<text x="74" y="532" class="h c-m2">M2 整教室预约与审批</text>
+<rect x="74.0" y="546" width="113.0" height="30" rx="6" class="chip-m2"/>
+<text x="130.5" y="565.5" class="t" text-anchor="middle">准入校验（门槛）</text>
+<rect x="195.0" y="546" width="113.0" height="30" rx="6" class="chip-m2"/>
+<text x="251.5" y="565.5" class="t" text-anchor="middle">申请管理</text>
+<rect x="74.0" y="584" width="113.0" height="30" rx="6" class="chip-m2"/>
+<text x="130.5" y="603.5" class="t" text-anchor="middle">多级审批流</text>
+<rect x="195.0" y="584" width="113.0" height="30" rx="6" class="chip-m2"/>
+<text x="251.5" y="603.5" class="t" text-anchor="middle">超时自动撤销</text>
+<rect x="74.0" y="622" width="113.0" height="30" rx="6" class="chip-m2"/>
+<text x="130.5" y="641.5" class="t" text-anchor="middle">申请查询</text>
+<rect x="195.0" y="622" width="113.0" height="30" rx="6" class="chip-m2"/>
+<text x="251.5" y="641.5" class="t" text-anchor="middle">审批链配置</text>
+<rect x="74" y="664" width="234" height="50" rx="6" class="hl-m2"/>
+<text x="191.0" y="684" class="t" text-anchor="middle" style="font-weight:700">占用写回 → M1</text>
+<text x="191.0" y="704" class="tt" text-anchor="middle">本地事务 + Outbox 重试</text>
+<text x="74" y="742" class="tm mono">room-service · /api/m2/v1</text>
+<rect x="398" y="508" width="444" height="250" rx="8" class="box-m1"/>
+<text x="412" y="532" class="h c-m1">M1 自习座位预约</text>
+<rect x="412.0" y="546" width="133.33333333333334" height="30" rx="6" class="chip-m1"/>
+<text x="478.6666666666667" y="565.5" class="t" text-anchor="middle">座位检索</text>
+<rect x="553.3333333333334" y="546" width="133.33333333333334" height="30" rx="6" class="chip-m1"/>
+<text x="620.0" y="565.5" class="t" text-anchor="middle">预约管理</text>
+<rect x="694.6666666666667" y="546" width="133.33333333333334" height="30" rx="6" class="chip-m1"/>
+<text x="761.3333333333334" y="565.5" class="t" text-anchor="middle">历史与再次预约</text>
+<rect x="412.0" y="584" width="133.33333333333334" height="30" rx="6" class="chip-m1"/>
+<text x="478.6666666666667" y="603.5" class="t" text-anchor="middle">签到与签到码</text>
+<rect x="553.3333333333334" y="584" width="133.33333333333334" height="30" rx="6" class="chip-m1"/>
+<text x="620.0" y="603.5" class="t" text-anchor="middle">提醒与超时调度</text>
+<rect x="694.6666666666667" y="584" width="133.33333333333334" height="30" rx="6" class="chip-m1"/>
+<text x="761.3333333333334" y="603.5" class="t" text-anchor="middle">违约与处罚</text>
+<rect x="412.0" y="622" width="133.33333333333334" height="30" rx="6" class="chip-m1"/>
+<text x="478.6666666666667" y="641.5" class="t" text-anchor="middle">运营统计</text>
+<rect x="553.3333333333334" y="622" width="133.33333333333334" height="30" rx="6" class="chip-m1"/>
+<text x="620.0" y="641.5" class="t" text-anchor="middle">业务参数</text>
+<rect x="694.6666666666667" y="622" width="133.33333333333334" height="30" rx="6" class="chip-m1"/>
+<text x="761.3333333333334" y="641.5" class="t" text-anchor="middle">主数据变更处理</text>
+<rect x="412" y="664" width="416" height="50" rx="6" class="hl-m1"/>
+<text x="620.0" y="684" class="t" text-anchor="middle" style="font-weight:700">占用块与来源追溯（跨模块写回的唯一入口）</text>
+<text x="620.0" y="704" class="tt" text-anchor="middle">来源：M1 预约 · M2 整间占用 · M3 维修下架 · 管理员停用</text>
+<text x="412" y="742" class="tm mono">seat-service · /api/m1/v1 · /internal/m1/v1</text>
+<rect x="918" y="508" width="262" height="250" rx="8" class="box-m3"/>
+<text x="932" y="532" class="h c-m3">M3 物业报修工单</text>
+<rect x="932.0" y="546" width="113.0" height="30" rx="6" class="chip-m3"/>
+<text x="988.5" y="565.5" class="t" text-anchor="middle">故障上报</text>
+<rect x="1053.0" y="546" width="113.0" height="30" rx="6" class="chip-m3"/>
+<text x="1109.5" y="565.5" class="t" text-anchor="middle">派单</text>
+<rect x="932.0" y="584" width="113.0" height="30" rx="6" class="chip-m3"/>
+<text x="988.5" y="603.5" class="t" text-anchor="middle">维修状态流转</text>
+<rect x="1053.0" y="584" width="113.0" height="30" rx="6" class="chip-m3"/>
+<text x="1109.5" y="603.5" class="t" text-anchor="middle">超时升级</text>
+<rect x="932.0" y="622" width="113.0" height="30" rx="6" class="chip-m3"/>
+<text x="988.5" y="641.5" class="t" text-anchor="middle">完工验收</text>
+<rect x="1053.0" y="622" width="113.0" height="30" rx="6" class="chip-m3"/>
+<text x="1109.5" y="641.5" class="t" text-anchor="middle">评价</text>
+<rect x="932" y="664" width="234" height="50" rx="6" class="hl-m3"/>
+<text x="1049.0" y="684" class="t" text-anchor="middle" style="font-weight:700">下架写回 → M1</text>
+<text x="1049.0" y="704" class="tt" text-anchor="middle">本地事务 + Outbox 重试</text>
+<text x="932" y="742" class="tm mono">repair-service · /api/m3/v1</text>
+<path d="M308,689 L410,689" class="ar" marker-end="url(#ah)"/>
+<text x="360" y="680" class="tt" text-anchor="middle">同步 REST</text>
+<text x="360" y="707" class="tt" text-anchor="middle">幂等键</text>
+<path d="M932,689 L830,689" class="ar" marker-end="url(#ah)"/>
+<text x="880" y="680" class="tt" text-anchor="middle">同步 REST</text>
+<text x="880" y="707" class="tt" text-anchor="middle">幂等键</text>
+<path d="M560,758 L560,820" class="ar" marker-end="url(#ah)"/>
+<text x="550" y="792" class="tt" text-anchor="end">各服务 → D：同步 REST 查询 · JWKS 验签</text>
+<path d="M590,822 L590,760" class="ar async" marker-end="url(#ah)"/>
+<text x="600" y="814" class="tt">异步 MQ · space.* 变更事件 → M1</text>
+<path d="M1000,758 L1000,820" class="ar async" marker-end="url(#ah)"/>
+<text x="990" y="792" class="tt" text-anchor="end">异步 MQ · notify.send / audit.record</text>
+<text x="60" y="848" class="t"><tspan class="lt">④ 公共服务层 D</tspan><tspan class="ls">    platform-service：4 个子模块按包与 schema 隔离；归属可按子域拆分给各模块组（须形成决策记录）</tspan></text>
+<rect x="60.0" y="862" width="268.0" height="114" rx="8" class="box-d"/>
+<text x="74.0" y="885" class="h c-d">IAM 身份与权限</text>
+<circle cx="78.0" cy="903.5" r="4" class="dot-d"/>
+<text x="88.0" y="908" class="t">认证 · JWT 签发 / JWKS</text>
+<circle cx="78.0" cy="923.5" r="4" class="dot-d"/>
+<text x="88.0" y="928" class="t">用户与院系</text>
+<circle cx="78.0" cy="943.5" r="4" class="dot-d"/>
+<text x="88.0" y="948" class="t">角色 · 权限点 · 数据范围</text>
+<circle cx="78.0" cy="963.5" r="4" class="dot-d"/>
+<text x="88.0" y="968" class="t">服务凭证（client credentials）</text>
+<rect x="344.0" y="862" width="268.0" height="114" rx="8" class="box-d"/>
+<text x="358.0" y="885" class="h c-d">空间与座位主数据</text>
+<circle cx="362.0" cy="903.5" r="4" class="dot-d"/>
+<text x="372.0" y="908" class="t">校区 · 楼宇 · 房间 · 自习开放</text>
+<circle cx="362.0" cy="923.5" r="4" class="dot-d"/>
+<text x="372.0" y="928" class="t">座位 · 特殊标记 · 开放时间</text>
+<circle cx="362.0" cy="943.5" r="4" class="dot-d"/>
+<text x="372.0" y="948" class="t">启用 / 停用 / 注销</text>
+<circle cx="362.0" cy="963.5" r="4" class="dot-d"/>
+<text x="372.0" y="968" class="t">发布 space.* 变更事件</text>
+<rect x="628.0" y="862" width="268.0" height="114" rx="8" class="box-d"/>
+<text x="642.0" y="885" class="h c-d">通知服务</text>
+<circle cx="646.0" cy="903.5" r="4" class="dot-d"/>
+<text x="656.0" y="908" class="t">消费 notify 命令 · 模板渲染</text>
+<circle cx="646.0" cy="923.5" r="4" class="dot-d"/>
+<text x="656.0" y="928" class="t">邮件 / 站内信渠道</text>
+<circle cx="646.0" cy="943.5" r="4" class="dot-d"/>
+<text x="656.0" y="948" class="t">幂等 · 重试 · 投递记录</text>
+<circle cx="646.0" cy="963.5" r="4" class="dot-d"/>
+<text x="656.0" y="968" class="t">消息中心 API</text>
+<rect x="912.0" y="862" width="268.0" height="114" rx="8" class="box-d"/>
+<text x="926.0" y="885" class="h c-d">操作审计</text>
+<circle cx="930.0" cy="903.5" r="4" class="dot-d"/>
+<text x="940.0" y="908" class="t">消费 audit 事件</text>
+<circle cx="930.0" cy="923.5" r="4" class="dot-d"/>
+<text x="940.0" y="928" class="t">只增不改存储</text>
+<circle cx="930.0" cy="943.5" r="4" class="dot-d"/>
+<text x="940.0" y="948" class="t">按操作者 / 对象 / 时间查询</text>
+<circle cx="930.0" cy="963.5" r="4" class="dot-d"/>
+<text x="940.0" y="968" class="t">traceId 关联跨服务链路</text>
+<path d="M300,976 L300,1038" class="ar" marker-end="url(#ah)"/>
+<text x="310" y="1018" class="tt">各服务 JDBC（只访问本 schema）</text>
+<path d="M700,976 L700,1038" class="ar async" marker-end="url(#ah)"/>
+<text x="710" y="1018" class="tt">AMQP</text>
+<path d="M860,976 L860,1038" class="ar" marker-end="url(#ah)"/>
+<text x="870" y="1018" class="tt">SMTP</text>
+<path d="M1090,976 L1090,1038" class="ar" marker-end="url(#ah)"/>
+<text x="1100" y="1018" class="tt">Redis</text>
+<text x="60" y="1066" class="t"><tspan class="lt">⑤ 数据与中间件层</tspan><tspan class="ls">    每个环境一套，全部容器化</tspan></text>
+<rect x="60" y="1080" width="500" height="86" rx="8" class="card"/>
+<text x="74" y="1101" class="h">PostgreSQL 16 · 单实例多 schema</text>
+<rect x="74" y="1110" width="61" height="24" rx="5" class="box-d"/>
+<text x="104.5" y="1126.5" class="tt mono c-d" text-anchor="middle">iam</text>
+<rect x="141" y="1110" width="61" height="24" rx="5" class="box-d"/>
+<text x="171.5" y="1126.5" class="tt mono c-d" text-anchor="middle">space</text>
+<rect x="208" y="1110" width="61" height="24" rx="5" class="box-d"/>
+<text x="238.5" y="1126.5" class="tt mono c-d" text-anchor="middle">notify</text>
+<rect x="275" y="1110" width="61" height="24" rx="5" class="box-d"/>
+<text x="305.5" y="1126.5" class="tt mono c-d" text-anchor="middle">audit</text>
+<rect x="342" y="1110" width="61" height="24" rx="5" class="box-m1"/>
+<text x="372.5" y="1126.5" class="tt mono c-m1" text-anchor="middle">m1</text>
+<rect x="409" y="1110" width="61" height="24" rx="5" class="box-m2"/>
+<text x="439.5" y="1126.5" class="tt mono c-m2" text-anchor="middle">m2</text>
+<rect x="476" y="1110" width="61" height="24" rx="5" class="box-m3"/>
+<text x="506.5" y="1126.5" class="tt mono c-m3" text-anchor="middle">m3</text>
+<text x="74" y="1155" class="tm">每服务独立账号只授权本 schema · Flyway 版本化迁移 · 种子脚本幂等</text>
+<rect x="576" y="1080" width="210" height="86" rx="8" class="card"/>
+<text x="590" y="1101" class="h">RabbitMQ</text>
+<text x="590" y="1124" class="t">domain.events（topic）</text>
+<text x="590" y="1144" class="t">notify / audit 队列 · 死信队列</text>
+<rect x="802" y="1080" width="186" height="86" rx="8" class="card"/>
+<text x="816" y="1101" class="h">邮件网关</text>
+<text x="816" y="1124" class="t">dev / test：Mailpit 捕获</text>
+<text x="816" y="1144" class="t">prod：SMTP</text>
+<rect x="1004" y="1080" width="176" height="86" rx="8" class="card"/>
+<text x="1018" y="1101" class="h">Redis</text>
+<text x="1018" y="1124" class="t">主数据缓存 · 签到码</text>
+<text x="1018" y="1144" class="t">限流计数 · 幂等键</text>
+<text x="1270" y="116" class="lt">⑥ 交付与运行支撑</text>
+<rect x="1266" y="134" width="278" height="112" rx="8" class="box-x"/>
+<text x="1280" y="157" class="h">代码与评审</text>
+<circle cx="1284" cy="175.5" r="4" class="dot-x"/>
+<text x="1294" y="180" class="t">GitHub 单仓库 · 分支保护</text>
+<circle cx="1284" cy="195.5" r="4" class="dot-x"/>
+<text x="1294" y="200" class="t">合并请求评审 · CODEOWNERS 按模块</text>
+<circle cx="1284" cy="215.5" r="4" class="dot-x"/>
+<text x="1294" y="220" class="t">跨模块 / 公共层 / schema 变更组内评审</text>
+<circle cx="1284" cy="235.5" r="4" class="dot-x"/>
+<text x="1294" y="240" class="t">契约 contracts/（OpenAPI、事件）</text>
+<rect x="1266" y="272" width="278" height="132" rx="8" class="box-x"/>
+<text x="1280" y="295" class="h">CI · GitHub Actions</text>
+<circle cx="1284" cy="313.5" r="4" class="dot-x"/>
+<text x="1294" y="318" class="t">构建 · 静态检查</text>
+<circle cx="1284" cy="333.5" r="4" class="dot-x"/>
+<text x="1294" y="338" class="t">单元 / 集成（Testcontainers）</text>
+<circle cx="1284" cy="353.5" r="4" class="dot-x"/>
+<text x="1294" y="358" class="t">契约测试 · 变异测试</text>
+<circle cx="1284" cy="373.5" r="4" class="dot-x"/>
+<text x="1294" y="378" class="t">任一失败即中止后续阶段</text>
+<circle cx="1284" cy="393.5" r="4" class="dot-x"/>
+<text x="1294" y="398" class="t">镜像 tag = 提交 SHA → GHCR</text>
+<path d="M1405,246 L1405,270" class="ar" marker-end="url(#ah)"/>
+<path d="M1405,404 L1405,428" class="ar" marker-end="url(#ah)"/>
+<rect x="1266" y="430" width="278" height="252" rx="8" class="box-x"/>
+<text x="1280" y="453" class="h">环境（每环境一套 Compose）</text>
+<rect x="1278" y="466" width="254" height="62" rx="6" class="card"/>
+<text x="1290" y="488" class="h mono">dev</text>
+<text x="1340" y="488" class="t">开发者本地 Compose</text>
+<text x="1340" y="509" class="t">Mailpit · 可控时钟 · 演示数据</text>
+<rect x="1278" y="536" width="254" height="62" rx="6" class="card"/>
+<text x="1290" y="558" class="h mono">test</text>
+<text x="1340" y="558" class="t">合并主干后自动部署 · 部署锁</text>
+<text x="1340" y="579" class="t">健康检查通过后跑集成 / E2E</text>
+<rect x="1278" y="606" width="254" height="62" rx="6" class="card"/>
+<text x="1290" y="628" class="h mono">prod</text>
+<text x="1340" y="628" class="t">版本 tag + 人工审批后发布</text>
+<text x="1340" y="649" class="t">一键回滚到上一个 tag</text>
+<path d="M1405,682 L1405,706" class="ar" marker-end="url(#ah)"/>
+<rect x="1266" y="708" width="278" height="96" rx="8" class="box-x"/>
+<text x="1280" y="731" class="h">发布顺序（一次部署覆盖全部模块）</text>
+<text x="1280" y="756" class="t">迁移 → D → M1 → M2/M3 → 前端 → Agent</text>
+<text x="1280" y="780" class="tm">迁移先扩展后收缩，保证可回滚</text>
+<rect x="1266" y="822" width="278" height="132" rx="8" class="box-x"/>
+<text x="1280" y="845" class="h">可观测与版本</text>
+<circle cx="1284" cy="863.5" r="4" class="dot-x"/>
+<text x="1294" y="868" class="t">结构化日志 + traceId 贯穿全链路</text>
+<circle cx="1284" cy="884.5" r="4" class="dot-x"/>
+<text x="1294" y="889" class="t">/health 存活与就绪，作部署门禁</text>
+<circle cx="1284" cy="905.5" r="4" class="dot-x"/>
+<text x="1294" y="910" class="t">/version 版本号 · SHA · 构建时间</text>
+<circle cx="1284" cy="926.5" r="4" class="dot-x"/>
+<text x="1294" y="931" class="t">前端页脚显示当前版本</text>
+<rect x="1266" y="972" width="278" height="192" rx="8" class="box-x"/>
+<text x="1280" y="995" class="h">测试辅助（仅 dev / test）</text>
+<circle cx="1284" cy="1013.5" r="4" class="dot-x"/>
+<text x="1294" y="1018" class="t">时间推进 / 立即触发调度</text>
+<circle cx="1284" cy="1034.5" r="4" class="dot-x"/>
+<text x="1294" y="1039" class="t">邮件沙箱断言提醒内容</text>
+<circle cx="1284" cy="1055.5" r="4" class="dot-x"/>
+<text x="1294" y="1060" class="t">种子数据：基础数据 + 演示数据</text>
+<circle cx="1284" cy="1076.5" r="4" class="dot-x"/>
+<text x="1294" y="1081" class="t">契约桩：依赖未就绪时并行开发</text>
+<circle cx="1284" cy="1097.5" r="4" class="dot-x"/>
+<text x="1294" y="1102" class="t">变异测试：故意破坏实现看是否失败</text>
+<path d="M40,1222 L90,1222" class="ar" marker-end="url(#ah)"/>
+<text x="98" y="1226.5" class="tm">同步调用（HTTP / JDBC）</text>
+<path d="M270,1222 L320,1222" class="ar async" marker-end="url(#ah)"/>
+<text x="328" y="1226.5" class="tm">异步消息（RabbitMQ）</text>
+<rect x="490" y="1212" width="30" height="20" rx="5" class="chip-x"/>
+<text x="528" y="1226.5" class="tm">子模块：建议的最小分工单元</text>
+<rect x="740" y="1212" width="30" height="20" rx="5" class="hl-m1"/>
+<text x="778" y="1226.5" class="tm">跨模块集成点</text>
+<text x="1560" y="1226.5" class="tm" text-anchor="end">详见 docs/architecture/architecture.md</text>
+</svg>
