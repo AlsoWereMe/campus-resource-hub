@@ -83,7 +83,7 @@
 | 链路标识 | 注入 `X-Request-Id` / `traceparent` |
 | 不做的事 | 不做鉴权、不做聚合。各服务作为资源服务器，用 IAM 发布的公钥（JWKS）本地验签 |
 
-> 为什么不用网关统一鉴权：鉴权放在服务内，权限点与数据范围校验才能和业务代码放在一起测试；网关保持「哑管道」，换实现成本低。备选是 Spring Cloud Gateway 统一验签，见 ADR-006。
+> 为什么不用网关统一鉴权：鉴权放在服务内，权限点与数据范围校验才能和业务代码放在一起测试；网关保持「哑管道」，换实现成本低。备选是在 Nginx 用 `auth_request` 统一验签，见 ADR-006。
 
 ### 4.3 业务服务层
 
@@ -146,7 +146,7 @@ M1 内部依赖方向：检索、预约 → 占用块；调度 → 预约、违�
 | 通知服务 | 消费通知命令、模板渲染、邮件与站内信渠道、幂等、重试、投递记录 | `notify` | 命令：`notify.send`；公开：消息中心、投递记录 |
 | 操作审计 | 消费审计事件，只增不改存储，查询 | `audit` | 事件：`audit.record`；公开：审计查询 |
 
-**部署形态**：默认四个子模块打包为一个部署单元 `platform-service`，按包与 schema 隔离、各有独立 API 前缀。理由：每个环境的服务器内存有限，少一个 JVM 就少约 400 MB；四者都是「被依赖方」，通常一起发布。若公共层最终按子域拆给不同模块组，且组内更看重故障归属，可拆为 2 ~ 4 个服务——因为已按包与 schema 隔离，拆分只是部署层面的改动（ADR-004）。
+**部署形态**：默认四个子模块打包为一个部署单元 `platform-service`，按包与 schema 隔离、各有独立 API 前缀。理由：少一个服务进程与容器，部署和发布都少一步；四者都是「被依赖方」，通常一起发布。若公共层最终按子域拆给不同模块组，且组内更看重故障归属，可拆为 2 ~ 4 个服务——因为已按包与 schema 隔离，拆分只是部署层面的改动（ADR-004）。
 
 ### 4.5 数据与中间件层
 
@@ -302,7 +302,7 @@ sequenceDiagram
 | 时间推进 / 立即触发调度 | 开启 | 开启 | 关闭 |
 | 回滚 | — | 重新部署任意镜像 | 重新部署上一个版本标签 |
 
-每个环境：Nginx、`platform-service`、`seat-service`、`room-service`、`repair-service`、PostgreSQL、RabbitMQ、Redis（dev / test 另加 Mailpit），共约 4 个 JVM。**服务器建议 4 核 8 GB，最低 2 核 4 GB**（需把 JVM 堆限制在 256 ~ 384 MB）。
+每个环境：Nginx、`platform-service`、`seat-service`、`room-service`、`repair-service`、PostgreSQL、RabbitMQ、Redis（dev / test 另加 Mailpit）。4 个 Python 服务进程各约 100 ~ 200 MB；前端是静态文件，由 Nginx 托管，不需要 Node 运行时。**服务器最低 2 核 4 GB，4 核 8 GB 更从容。**
 
 ### 8.2 流水线
 
@@ -335,22 +335,32 @@ flowchart LR
 
 | 层 | 采用 | 备选 | 理由 |
 | --- | --- | --- | --- |
-| 后端语言 / 框架 | Java 21 + Spring Boot 3（Web、Security Resource Server、Data JPA、Validation、Actuator） | Go + Gin；TypeScript + NestJS | 企业级主流，资料与 AI 生成质量都好；安全、事务、调度、可观测性开箱即用 |
-| 构建 | Gradle 多项目 | Maven | 一个仓库管理多个服务与公共库 |
-| 数据库迁移 | Flyway | Liquibase | 纯 SQL 版本化脚本，易审查 |
-| 数据库 | PostgreSQL 16 | MySQL 8 | 区间类型 + 排他约束防重叠预约；schema 隔离方便 |
-| 消息 | RabbitMQ | Redis Streams；Kafka | 命令 / 事件路由灵活、有死信队列；比 Kafka 轻 |
-| 缓存 | Redis 7 | — | 签到码、限流、缓存 |
-| 定时任务 | Spring Scheduling + ShedLock | Quartz | 多实例下只执行一次，足够简单 |
-| 认证 | IAM 自研 JWT 签发 + JWKS | Keycloak；Spring Authorization Server | 数据范围、院系等规则与业务贴近；Keycloak 功能全但定制与运维成本高 |
-| 前端 | Vue 3 + TypeScript + Vite + Pinia + Vue Router | React + TypeScript | 上手快；学生端用 Vant（移动），后台用 Element Plus |
-| API 描述与客户端 | springdoc-openapi → openapi-typescript | — | 契约即文档，前端类型自动生成 |
-| 测试 | JUnit 5、Testcontainers、Spring Cloud Contract 或基于 OpenAPI 的契约测试、PIT（变异测试）、Vitest、Playwright | Pact | 覆盖单元、集成、契约、变异、E2E 五层 |
-| 网关 | Nginx | Spring Cloud Gateway；Traefik | 轻量，无业务逻辑 |
+| 后端语言 / 框架 | Python 3.12 + FastAPI + Uvicorn | Django + DRF；Flask | 类型标注加 Pydantic 校验，自动生成 OpenAPI，契合契约先行；异步 IO 适合服务间调用与消息；上手快，AI 生成质量好 |
+| 数据访问 | SQLAlchemy 2（asyncio）+ psycopg 3 | SQLModel；Django ORM | 成熟；支持 PostgreSQL 区间类型与排他约束 |
+| 数据库迁移 | Alembic，每个服务一条迁移链，版本表放在本服务 schema | — | 版本化脚本可审查、可从空库重放 |
+| 配置 | pydantic-settings，全部来自环境变量 | — | 同一镜像跑在不同环境 |
+| 依赖与工作区 | uv workspace：各服务与公共库是同一仓库中的独立包，锁文件入库 | Poetry | 安装快、锁定可复现、原生支持多包工作区 |
+| 代码质量 | Ruff（检查 + 格式化）、mypy（strict，领域层与公共库必须通过） | Pyright | Python 的动态类型风险由类型检查兜底 |
+| 消息 | RabbitMQ + aio-pika | Redis Streams；Kafka | 命令 / 事件路由灵活、有死信队列；比 Kafka 轻 |
+| 缓存 | Redis 7（redis-py asyncio） | — | 签到码、限流、缓存 |
+| 定时任务 | APScheduler（进程内）+ PostgreSQL advisory lock | Celery beat | 不引入额外的 worker 进程；多实例下同一任务只执行一次，配合「每分钟扫描 + 幂等」 |
+| 服务间 HTTP | httpx（异步） | aiohttp | 与 FastAPI 测试客户端同源 |
+| 认证 | IAM 自研 JWT 签发 + JWKS（PyJWT），密码用 Argon2 哈希 | Keycloak | 数据范围、院系等规则与业务贴近；Keycloak 功能全但定制与运维成本高 |
+| 前端 | Next.js（App Router）+ TypeScript + React；Tailwind CSS + shadcn/ui；TanStack Query | Vue 3；React + Vite | 生态大、文件路由清晰；组件库可同时满足移动端与后台 |
+| 前端渲染方式 | 静态导出（`output: 'export'`），由 Nginx 托管 | Node 运行时 SSR | 业务全部在后端模块 API 中，前端不成为「第二个后端」；生产不需要 Node 运行时；JWT 在浏览器侧使用 |
+| API 描述与客户端 | FastAPI 导出 OpenAPI 存入 `contracts/` → openapi-typescript + openapi-fetch 生成前端类型与客户端 | — | 契约即文档，前后端类型一致 |
+| 测试 | pytest + pytest-asyncio、testcontainers-python（真实 PostgreSQL / RabbitMQ / Redis）、Schemathesis（按 OpenAPI 做契约与属性测试）、mutmut（变异测试）、Vitest + Testing Library、Playwright | Pact | 覆盖单元、集成、契约、变异、E2E 五层 |
+| 网关 | Nginx | Traefik | 轻量，无业务逻辑 |
 | 容器与编排 | Docker + Docker Compose | k3s | 课程规模下 Compose 足够，脚本化、可重放 |
 | CI/CD 与镜像仓库 | GitHub Actions（Environments 做 prod 审批）+ GHCR | GitLab CI | 仓库已在 GitHub |
-| 可观测 | 结构化 JSON 日志 + Micrometer Tracing | Prometheus + Grafana + Loki（P2） | 先满足 traceId 贯穿与健康检查 |
+| 可观测 | structlog（JSON 日志）+ OpenTelemetry（traceId 跨服务、跨消息传播） | Prometheus + Grafana + Loki（P2） | 先满足 traceId 贯穿与健康检查 |
 | 代理插件 | 遵循 DSH 插件规范，使用由 OpenAPI 生成的客户端 | — | 只调公开 API（C2） |
+
+**与技术栈相关的约定**
+
+- **统一异步**：路由、数据库、消息、服务间 HTTP 全部使用异步库，不在事件循环里调用阻塞 IO。
+- **契约先行的做法**：先写路由签名与 Pydantic 模型（实现可先返回 501），导出 OpenAPI 到 `contracts/` 并在合并请求中评审，再写实现。CI 校验 `contracts/` 与代码导出的 OpenAPI 一致，并检测破坏性变更。
+- **前端不承载业务逻辑**：不使用 Route Handlers、Server Actions 实现业务；详情页等用查询参数传 ID（静态导出不支持运行时动态路由段）。
 
 ---
 
@@ -434,21 +444,25 @@ flowchart LR
 
 ```text
 campus-resource-hub/
+├── pyproject.toml                # uv workspace 根：声明各服务包与公共库
 ├── apps/
-│   └── web/                      # 前端单一工程
+│   └── web/                      # 前端单一工程（Next.js App Router，静态导出）
 │       └── src/
-│           ├── shell/            # 前端公共壳（D）
-│           ├── modules/
-│           │   ├── m1/  m2/  m3/ # 各模块页面（学生端 + 管理后台）
-│           │   └── platform/     # 公共层管理页面（D）
-│           └── screen/           # 自习室屏幕端（M1）
+│           ├── app/              # 路由与布局：(student)、(admin)、screen 三组
+│           ├── shell/            # 前端公共壳（D）：登录态、菜单、API Client、错误处理
+│           └── modules/
+│               ├── m1/  m2/  m3/ # 各模块页面与组件（含 M1 的屏幕端）
+│               └── platform/     # 公共层管理页面（D）
 ├── services/
 │   ├── platform/                 # D：iam / space / notify / audit 四个包
 │   ├── seat/                     # M1
 │   ├── room/                     # M2
 │   └── repair/                   # M3
-│       └── src/main/resources/db/{migration,seed}/   # 每个服务自管迁移与种子
-├── libs/common/                  # 非业务公共库：错误结构、traceId、鉴权工具
+│       ├── src/                  # 服务代码：api / application / domain / infrastructure
+│       ├── migrations/           # 本服务的 Alembic 迁移链
+│       ├── seeds/                # 本服务的幂等种子脚本（基础 / 演示）
+│       └── tests/                # 单元、集成、契约测试
+├── libs/common/                  # 非业务公共库（Python 包）：错误结构、traceId、鉴权、时钟、Outbox
 ├── contracts/                    # OpenAPI 与事件 Schema，按提供方分目录
 ├── agent-plugin/                 # 附加项：DSH 插件
 ├── deploy/                       # Compose（dev / test / prod）、Nginx 配置、初始化脚本
@@ -479,3 +493,4 @@ CODEOWNERS 按上述目录指定模块组；`contracts/`、`libs/common/`、各�
 | ADR-008 | 分支、合并与发布策略 | 主干开发 + 短分支 + 合并请求 + 版本标签发布 |
 | ADR-009 | M2 写入 M1 的时机（HOLD / ACTIVE） | 提交即 HOLD，终审通过升级 ACTIVE（需求总览 Q6） |
 | ADR-010 | M3 图片附件存储 | M3 自管挂载卷，不引入对象存储（需求总览 Q24） |
+| ADR-011 | 前端渲染方式 | Next.js 静态导出，由 Nginx 托管，前端不承载业务逻辑（§9） |
