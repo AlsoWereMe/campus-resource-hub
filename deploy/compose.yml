@@ -1,9 +1,97 @@
-# 本地开发环境的中间件（架构 §4.5、§8）。
+# 本地开发环境（架构 §4.5、§8）：中间件 + 四个后端服务 + 网关。
 # 通过 Makefile 使用：make up / make down / make reset。端口只绑定 127.0.0.1，不对局域网开放。
+# 服务源码以卷挂载，改代码后自动重载；启动时自动迁移并写入种子数据。
 
 name: campus-resource-hub
 
+x-service: &service
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+    rabbitmq:
+      condition: service_healthy
+  volumes:
+    - ../libs:/app/libs
+    - ../services:/app/services
+  healthcheck:
+    test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/health/ready')"]
+    interval: 5s
+    timeout: 5s
+    retries: 30
+    start_period: 10s
+
+x-service-env: &service-env
+  ENV: dev
+  APP_VERSION: dev
+  RABBITMQ_URL: amqp://${RABBITMQ_USER:-campus}:${RABBITMQ_PASSWORD:?}@rabbitmq:5672/
+  REDIS_URL: redis://redis:6379/0
+  PLATFORM_URL: http://platform:8000
+  SEAT_URL: http://seat:8000
+  ROOM_URL: http://room:8000
+  REPAIR_URL: http://repair:8000
+  SEED_DEMO: ${SEED_DEMO:-true}
+  PYTHONDONTWRITEBYTECODE: "1"
+  UVICORN_ARGS: --reload --reload-dir /app/libs --reload-dir /app/services
+
 services:
+  platform:
+    <<: *service
+    build: { context: .., dockerfile: deploy/service.Dockerfile, args: { SERVICE: platform } }
+    environment:
+      <<: *service-env
+      DATABASE_URL: postgresql+psycopg://platform_svc:${PLATFORM_DB_PASSWORD:?}@postgres:5432/${POSTGRES_DB:-campus}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?}
+      SERVICE_CLIENT_SECRETS: seat:${SEAT_CLIENT_SECRET:?},room:${ROOM_CLIENT_SECRET:?},repair:${REPAIR_CLIENT_SECRET:?}
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+    ports:
+      - "127.0.0.1:${PLATFORM_PORT:-8001}:8000"
+
+  seat:
+    <<: *service
+    build: { context: .., dockerfile: deploy/service.Dockerfile, args: { SERVICE: seat } }
+    environment:
+      <<: *service-env
+      DATABASE_URL: postgresql+psycopg://seat_svc:${SEAT_DB_PASSWORD:?}@postgres:5432/${POSTGRES_DB:-campus}
+      SERVICE_CLIENT_ID: seat
+      SERVICE_CLIENT_SECRET: ${SEAT_CLIENT_SECRET:?}
+    ports:
+      - "127.0.0.1:${SEAT_PORT:-8002}:8000"
+
+  room:
+    <<: *service
+    build: { context: .., dockerfile: deploy/service.Dockerfile, args: { SERVICE: room } }
+    environment:
+      <<: *service-env
+      DATABASE_URL: postgresql+psycopg://room_svc:${ROOM_DB_PASSWORD:?}@postgres:5432/${POSTGRES_DB:-campus}
+      SERVICE_CLIENT_ID: room
+      SERVICE_CLIENT_SECRET: ${ROOM_CLIENT_SECRET:?}
+    ports:
+      - "127.0.0.1:${ROOM_PORT:-8003}:8000"
+
+  repair:
+    <<: *service
+    build: { context: .., dockerfile: deploy/service.Dockerfile, args: { SERVICE: repair } }
+    environment:
+      <<: *service-env
+      DATABASE_URL: postgresql+psycopg://repair_svc:${REPAIR_DB_PASSWORD:?}@postgres:5432/${POSTGRES_DB:-campus}
+      SERVICE_CLIENT_ID: repair
+      SERVICE_CLIENT_SECRET: ${REPAIR_CLIENT_SECRET:?}
+    ports:
+      - "127.0.0.1:${REPAIR_PORT:-8004}:8000"
+
+  gateway:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on: [platform, seat, room, repair]
+    volumes:
+      - ./nginx/dev.conf:/etc/nginx/conf.d/default.conf:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:${GATEWAY_PORT:-8080}:80"
+
   postgres:
     image: postgres:16
     environment:
