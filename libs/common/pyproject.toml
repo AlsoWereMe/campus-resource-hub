@@ -1,0 +1,28 @@
+[project]
+name = "campus-common"
+version = "0.1.0"
+description = "各服务共用的非业务公共库：配置、日志、错误、鉴权、时钟、数据库、Outbox、消息、定时任务"
+requires-python = "==3.12.*"
+dependencies = [
+    "aio-pika>=9.4",
+    "alembic>=1.13",
+    "apscheduler>=3.10,<4",
+    "fastapi>=0.115",
+    "httpx>=0.27",
+    "psycopg[binary]>=3.2",
+    "pydantic>=2.8",
+    "pydantic-settings>=2.4",
+    "pyjwt[crypto]>=2.9",
+    "python-multipart>=0.0.9",
+    "sqlalchemy[asyncio]>=2.0.32",
+    "structlog>=24.4",
+    "tzdata>=2024.1",
+    "uvicorn[standard]>=0.30",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/campus_common"]

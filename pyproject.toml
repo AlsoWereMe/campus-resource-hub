@@ -18,7 +18,10 @@ dev = [
     "mypy>=1.11",
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
+    "pyyaml>=6.0",
     "ruff>=0.6",
+    "testcontainers[postgres]>=4.8",
+    "types-pyyaml>=6.0",
 ]
 
 # ---------- Ruff：代码检查与格式化 ----------
@@ -43,6 +46,16 @@ select = [
     "PT",       # pytest 写法
 ]
 
+ignore = [
+    "RUF001", "RUF002", "RUF003",  # 中文标点是本项目的正常写法
+    "B008",    # FastAPI 的 Depends / Query 默认值写法
+    "N818",    # 异常类名不强制 Error 后缀
+    "UP046",   # Pydantic 泛型模型沿用 Generic 写法
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["campus_common", "platform_service", "seat_service", "room_service", "repair_service"]
+
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**" = ["S101"]  # 测试中允许 assert
 
@@ -50,9 +63,14 @@ select = [
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["libs", "services"]
-namespace_packages = true
+files = ["libs", "services", "scripts"]
+mypy_path = ["libs/common/src", "services/platform/src", "services/seat/src", "services/room/src", "services/repair/src"]
 explicit_package_bases = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["apscheduler.*", "testcontainers.*"]
+ignore_missing_imports = true
 
 # ---------- pytest ----------
 [tool.pytest.ini_options]
