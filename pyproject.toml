@@ -63,7 +63,7 @@ known-first-party = ["campus_common", "platform_service", "seat_service", "room_
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["libs", "services"]
+files = ["libs", "services", "scripts"]
 mypy_path = ["libs/common/src", "services/platform/src", "services/seat/src", "services/room/src", "services/repair/src"]
 explicit_package_bases = true
 plugins = ["pydantic.mypy"]

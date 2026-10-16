@@ -1,0 +1,105 @@
+{
+  "description": "audit.record：一条操作审计（AUD-01）。",
+  "properties": {
+    "actorType": {
+      "enum": [
+        "user",
+        "service",
+        "system"
+      ],
+      "title": "Actortype",
+      "type": "string"
+    },
+    "actorId": {
+      "title": "Actorid",
+      "type": "string"
+    },
+    "actorName": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Actorname"
+    },
+    "action": {
+      "description": "如 m1.setting.update、m2.application.approve",
+      "title": "Action",
+      "type": "string"
+    },
+    "targetType": {
+      "title": "Targettype",
+      "type": "string"
+    },
+    "targetId": {
+      "title": "Targetid",
+      "type": "string"
+    },
+    "before": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Before"
+    },
+    "after": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "After"
+    },
+    "result": {
+      "default": "success",
+      "enum": [
+        "success",
+        "failure"
+      ],
+      "title": "Result",
+      "type": "string"
+    },
+    "occurredAt": {
+      "format": "date-time",
+      "title": "Occurredat",
+      "type": "string"
+    },
+    "traceId": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Traceid"
+    }
+  },
+  "required": [
+    "actorType",
+    "actorId",
+    "action",
+    "targetType",
+    "targetId",
+    "occurredAt"
+  ],
+  "title": "AuditRecord",
+  "type": "object"
+}

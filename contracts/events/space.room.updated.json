@@ -1,0 +1,212 @@
+{
+  "$defs": {
+    "ApplicantType": {
+      "enum": [
+        "STAFF",
+        "STUDENT_LEADER"
+      ],
+      "title": "ApplicantType",
+      "type": "string"
+    },
+    "OpeningRule": {
+      "properties": {
+        "weekday": {
+          "description": "1=周一 … 7=周日",
+          "maximum": 7,
+          "minimum": 1,
+          "title": "Weekday",
+          "type": "integer"
+        },
+        "startHour": {
+          "maximum": 23,
+          "minimum": 0,
+          "title": "Starthour",
+          "type": "integer"
+        },
+        "endHour": {
+          "description": "不含；起止均为整点（BR-22）",
+          "maximum": 24,
+          "minimum": 1,
+          "title": "Endhour",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "weekday",
+        "startHour",
+        "endHour"
+      ],
+      "title": "OpeningRule",
+      "type": "object"
+    },
+    "OwnerType": {
+      "enum": [
+        "SCHOOL",
+        "DEPARTMENT"
+      ],
+      "title": "OwnerType",
+      "type": "string"
+    },
+    "RoomInfo": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "integer"
+        },
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "campusId": {
+          "title": "Campusid",
+          "type": "integer"
+        },
+        "buildingId": {
+          "title": "Buildingid",
+          "type": "integer"
+        },
+        "buildingName": {
+          "title": "Buildingname",
+          "type": "string"
+        },
+        "floor": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Floor"
+        },
+        "roomType": {
+          "$ref": "#/$defs/RoomType"
+        },
+        "capacity": {
+          "title": "Capacity",
+          "type": "integer"
+        },
+        "ownerType": {
+          "$ref": "#/$defs/OwnerType"
+        },
+        "departmentId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "归属院系；校级房间为空",
+          "title": "Departmentid"
+        },
+        "status": {
+          "$ref": "#/$defs/Status"
+        },
+        "studyOpen": {
+          "description": "是否开放为自习室（SPC-ROOM-02）",
+          "title": "Studyopen",
+          "type": "boolean"
+        },
+        "wholeRoomBookable": {
+          "description": "是否允许整间预约（SPC-ROOM-05）",
+          "title": "Wholeroombookable",
+          "type": "boolean"
+        },
+        "allowedApplicantTypes": {
+          "items": {
+            "$ref": "#/$defs/ApplicantType"
+          },
+          "title": "Allowedapplicanttypes",
+          "type": "array"
+        },
+        "facilities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Facilities",
+          "type": "array"
+        },
+        "openingRules": {
+          "items": {
+            "$ref": "#/$defs/OpeningRule"
+          },
+          "title": "Openingrules",
+          "type": "array"
+        },
+        "closures": {
+          "description": "闭馆日期（P1）",
+          "items": {
+            "format": "date",
+            "type": "string"
+          },
+          "title": "Closures",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "name",
+        "campusId",
+        "buildingId",
+        "buildingName",
+        "roomType",
+        "capacity",
+        "ownerType",
+        "status",
+        "studyOpen",
+        "wholeRoomBookable"
+      ],
+      "title": "RoomInfo",
+      "type": "object"
+    },
+    "RoomType": {
+      "enum": [
+        "CLASSROOM",
+        "LIBRARY_STUDY",
+        "OTHER_STUDY",
+        "MEETING",
+        "PUBLIC_AREA"
+      ],
+      "title": "RoomType",
+      "type": "string"
+    },
+    "Status": {
+      "enum": [
+        "ENABLED",
+        "DISABLED",
+        "DELETED"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "description": "space.room.updated：房间任何属性变化后发布完整快照（SPC-EVT-01）。",
+  "properties": {
+    "room": {
+      "$ref": "#/$defs/RoomInfo"
+    },
+    "changedFields": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Changedfields",
+      "type": "array"
+    }
+  },
+  "required": [
+    "room",
+    "changedFields"
+  ],
+  "title": "SpaceRoomUpdated",
+  "type": "object"
+}
