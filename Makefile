@@ -1,38 +1,54 @@
 # 常用本地命令。运行 make 或 make help 查看列表。Windows 组员请在 WSL2 中使用。
+# 带 s= 的命令指定服务：platform | seat | room | repair
 
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
+-include .env
 COMPOSE := docker compose --env-file .env -f deploy/compose.yml
-PY_SOURCES := $(shell find libs services -name '*.py' -not -path '*/.venv/*' 2>/dev/null)
+S_UPPER = $(shell echo $(s) | tr a-z A-Z)
+HOST_DB_URL = postgresql+psycopg://$(s)_svc:$($(S_UPPER)_DB_PASSWORD)@127.0.0.1:$(POSTGRES_PORT)/$(POSTGRES_DB)
 
-.PHONY: help setup up down reset ps logs lint fmt typecheck test verify-db check
+.PHONY: help setup up down reset ps logs restart seed revision lint fmt typecheck test verify-db \
+	contracts contracts-check check web
 
 help: ## 列出可用命令
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
 .env:
 	cp .env.example .env
 	@echo "已从 .env.example 生成 .env；端口冲突时在 .env 中修改"
 
-setup: .env ## 首次使用：生成 .env 并安装 Python 依赖
+setup: .env ## 首次使用：生成 .env，安装 Python 与前端依赖
 	uv sync --all-packages
+	@if [ -f apps/web/package.json ]; then cd apps/web && pnpm install; fi
 
-up: .env ## 启动本地中间件并等待全部健康
-	$(COMPOSE) up -d --wait
+up: .env ## 构建并启动全部容器（中间件、四个服务、网关），等待健康
+	$(COMPOSE) up -d --build --wait
 
 down: ## 停止本地环境（保留数据）
 	$(COMPOSE) down
 
-reset: ## 停止并删除本地数据卷，下次 up 时从空库重新初始化
+reset: ## 停止并删除本地数据卷；下次 up 时从空库重新迁移并写入种子
 	$(COMPOSE) down -v
 
 ps: ## 查看容器状态
 	$(COMPOSE) ps
 
-logs: ## 跟随日志；指定服务：make logs s=postgres
+logs: ## 跟随日志：make logs s=seat
 	$(COMPOSE) logs -f $(s)
+
+restart: ## 重启某个服务（会重新迁移）：make restart s=seat
+	$(COMPOSE) restart $(s)
+
+seed: ## 重新写入演示种子（幂等）：make seed s=platform
+	$(COMPOSE) exec $(s) python -m $(s)_service.seeds demo
+
+revision: ## 新建迁移（需先 make up）：make revision s=seat m="add booking"
+	@test -n "$(s)" -a -n "$(m)" || (echo '用法：make revision s=seat m="说明"'; exit 1)
+	DATABASE_URL="$(HOST_DB_URL)" uv run alembic -c services/$(s)/alembic.ini \
+		revision --autogenerate -m "$(m)"
 
 lint: ## 代码检查（不修改文件）
 	uv run ruff check .
@@ -43,18 +59,21 @@ fmt: ## 自动格式化并修复可自动修复的问题
 	uv run ruff check --fix .
 
 typecheck: ## 类型检查（mypy strict）
-ifeq ($(strip $(PY_SOURCES)),)
-	@echo "libs/ 与 services/ 中还没有 Python 代码，跳过类型检查"
-else
 	uv run mypy
-endif
 
-test: ## 运行测试（集成测试需要 Docker）
-	@uv run pytest; status=$$?; \
-	if [ $$status -eq 5 ]; then echo "没有收集到测试"; exit 0; fi; \
-	exit $$status
+test: ## 运行测试（需要 Docker）；只测一个服务：make test s=seat
+	uv run pytest $(if $(s),services/$(s),)
+
+contracts: ## 从代码导出接口与消息契约到 contracts/
+	uv run python scripts/export_contracts.py
+
+contracts-check: ## 检查 contracts/ 与代码一致（提交前必跑）
+	uv run python scripts/export_contracts.py --check
 
 verify-db: .env ## 验证数据库按 schema 隔离（需先 make up）
 	./scripts/verify-db-isolation.sh
 
-check: lint typecheck test ## 提交前检查：lint + typecheck + test
+check: lint typecheck contracts-check test ## 提交前检查：lint + typecheck + 契约一致 + test
+
+web: ## 启动前端开发服务器，然后访问 http://127.0.0.1:8080
+	cd apps/web && pnpm dev
