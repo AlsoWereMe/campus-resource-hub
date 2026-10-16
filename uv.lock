@@ -7,6 +7,9 @@ members = [
     "campus-common",
     "campus-resource-hub",
     "platform-service",
+    "repair-service",
+    "room-service",
+    "seat-service",
 ]
 
 [[package]]
@@ -914,6 +917,17 @@ wheels = [
 ]
 
 [[package]]
+name = "repair-service"
+version = "0.1.0"
+source = { editable = "services/repair" }
+dependencies = [
+    { name = "campus-common" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "campus-common", editable = "libs/common" }]
+
+[[package]]
 name = "requests"
 version = "2.34.2"
 source = { registry = "https://pypi.org/simple" }
@@ -927,6 +941,17 @@ sdist = { url = "https://files.pythonhosted.org/packages/ac/c3/e2a2b89f2d3e2179a
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl", hash = "sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0", size = 73075, upload-time = "2026-05-14T19:25:26.443Z" },
 ]
+
+[[package]]
+name = "room-service"
+version = "0.1.0"
+source = { editable = "services/room" }
+dependencies = [
+    { name = "campus-common" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "campus-common", editable = "libs/common" }]
 
 [[package]]
 name = "ruff"
@@ -952,6 +977,17 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/6a/2e/da3d9589bae8e8b58f3a48bd5bc0b980232fb14a83bf02c3be7660f87c1b/ruff-0.17.1-py3-none-win_amd64.whl", hash = "sha256:5df76f16580fab58d0f6c98a3ac254a4abceb7b2489b8b678335869cff77b3d7", size = 10097955, upload-time = "2026-10-15T15:23:13.309Z" },
     { url = "https://files.pythonhosted.org/packages/df/c9/0f2a4dea06a5e12c1191ee3d96b1e1233797d0d5e18f97a2b909a95a9836/ruff-0.17.1-py3-none-win_arm64.whl", hash = "sha256:42400b9a6ff8515ff27796f07f92e0195be011c86e81e381606f58ea5502fef4", size = 9853542, upload-time = "2026-10-15T15:23:16.05Z" },
 ]
+
+[[package]]
+name = "seat-service"
+version = "0.1.0"
+source = { editable = "services/seat" }
+dependencies = [
+    { name = "campus-common" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "campus-common", editable = "libs/common" }]
 
 [[package]]
 name = "sqlalchemy"
