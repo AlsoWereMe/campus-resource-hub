@@ -2,6 +2,48 @@
 
 校园资源服务平台 · 软件过程管理与工程伦理课程实践项目（PJ）。
 
+## 本地开发快速开始
+
+**准备**：Docker（含 Compose v2）、[uv](https://docs.astral.sh/uv/)、make；前端另需 Node.js 24 与 pnpm。Windows 请在 WSL2 中操作。
+
+```bash
+make setup
+```
+
+```bash
+make up
+```
+
+```bash
+make verify-db
+```
+
+- `make setup`：从 `.env.example` 生成 `.env`，安装 Python 依赖；
+- `make up`：启动 PostgreSQL、RabbitMQ、Redis、Mailpit，并等待全部健康；
+- `make verify-db`：确认数据库已按服务账号与 schema 隔离；
+- `make help`：查看全部命令。提交前运行 `make check`。
+
+| 组件 | 地址 |
+| --- | --- |
+| PostgreSQL | `127.0.0.1:5432`，数据库 `campus` |
+| RabbitMQ 管理界面 | http://127.0.0.1:15672 |
+| Redis | `127.0.0.1:6379` |
+| Mailpit（捕获的邮件） | http://127.0.0.1:8025 |
+
+端口与本机其他服务冲突时，在 `.env` 中修改对应的 `*_PORT`。账号与口令见 `.env`，只用于本机。
+
+## 目录
+
+| 目录 | 内容 |
+| --- | --- |
+| [services/](services/README.md) | 后端服务：platform（公共层 D）、seat（M1）、room（M2）、repair（M3） |
+| [libs/](libs/README.md) | 各服务共用的非业务公共库 |
+| [apps/](apps/README.md) | 前端（Next.js） |
+| [contracts/](contracts/README.md) | 接口与消息契约 |
+| `deploy/` | Compose 与数据库初始化脚本 |
+| `scripts/` | 辅助脚本 |
+| `docs/` | 需求、架构与决策记录 |
+
 ## 文档
 
 | 文档 | 说明 |
