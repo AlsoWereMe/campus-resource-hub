@@ -1,0 +1,16 @@
+[project]
+name = "repair-service"
+version = "0.1.0"
+description = "repair-service · M3 物业报修工单"
+requires-python = "==3.12.*"
+dependencies = ["campus-common"]
+
+[tool.uv.sources]
+campus-common = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/repair_service"]
