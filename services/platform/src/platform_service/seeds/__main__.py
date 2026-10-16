@@ -4,6 +4,7 @@ import sys
 from campus_common.db import Database
 from platform_service.config import Settings
 from platform_service.seeds.base import seed_base
+from platform_service.seeds.demo import seed_demo
 
 
 async def main(kind: str) -> None:
@@ -13,6 +14,8 @@ async def main(kind: str) -> None:
         async with db.sessionmaker() as session, session.begin():
             if kind == "base":
                 await seed_base(session, settings)
+            elif kind == "demo":
+                await seed_demo(session, settings)
             else:
                 raise SystemExit("用法：python -m platform_service.seeds base|demo")
     finally:

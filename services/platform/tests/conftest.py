@@ -16,6 +16,7 @@ from platform_service.config import Settings
 from platform_service.db import SCHEMAS
 from platform_service.main import create_app
 from platform_service.seeds.base import seed_base
+from platform_service.seeds.demo import seed_demo
 
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
 
@@ -45,6 +46,7 @@ async def app(settings: Settings) -> AsyncIterator[FastAPI]:
     application = create_app(settings)
     async with application.state.db.sessionmaker() as session, session.begin():
         await seed_base(session, settings)
+        await seed_demo(session, settings)
     yield application
     await application.state.db.dispose()
 
