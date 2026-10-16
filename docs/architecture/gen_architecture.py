@@ -264,7 +264,7 @@ def build(themed):
     for k, (sname, m) in enumerate([("iam", "d"), ("space", "d"), ("notify", "d"), ("audit", "d"), ("m1", "m1"), ("m2", "m2"), ("m3", "m3")]):
         rect(74 + k * 67, 1110, 61, 24, f"box-{m}", rx=5)
         text(74 + k * 67 + 30.5, 1126.5, sname, f"tt mono c-{m}", "middle")
-    text(74, 1155, "每服务独立账号只授权本 schema · Flyway 版本化迁移 · 种子脚本幂等", "tm")
+    text(74, 1155, "每服务独立账号只授权本 schema · Alembic 版本化迁移 · 种子脚本幂等", "tm")
     for (x, w, ttl, lines) in [
         (576, 210, "RabbitMQ", ["domain.events（topic）", "notify / audit 队列 · 死信队列"]),
         (802, 186, "邮件网关", ["dev / test：Mailpit 捕获", "prod：SMTP"]),
