@@ -1,7 +1,8 @@
 """数据库：异步引擎、每请求一个事务、按 schema 隔离的 ORM 基类。
 
 用法：
-    Base = make_base("m1")                    # 本服务 schema 中的所有表都继承它
+    class Base(DeclarativeBase):              # 本服务 schema 中的所有表都继承它
+        metadata = schema_metadata("m1")
     async def handler(session: SessionDep):  # 请求结束时自动提交，抛异常时回滚
 """
 
@@ -16,7 +17,6 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import DeclarativeBase
 
 NAMING_CONVENTION = {
     "ix": "ix_%(table_name)s_%(column_0_N_name)s",
@@ -27,14 +27,9 @@ NAMING_CONVENTION = {
 }
 
 
-def make_base(schema: str) -> type[DeclarativeBase]:
-    """返回绑定到指定 schema 的 ORM 基类。每个 schema 一个，不得跨 schema 建外键。"""
-
-    class Base(DeclarativeBase):
-        metadata = MetaData(schema=schema, naming_convention=NAMING_CONVENTION)
-
-    Base.__name__ = f"Base_{schema}"
-    return Base
+def schema_metadata(schema: str) -> MetaData:
+    """返回绑定到指定 schema 的 MetaData。每个 schema 一个，不得跨 schema 建外键。"""
+    return MetaData(schema=schema, naming_convention=NAMING_CONVENTION)
 
 
 class Database:

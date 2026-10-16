@@ -3,7 +3,7 @@
 典型用法（服务的 tests/conftest.py）：
     prepare_schemas(database_url, ["m1"], {"btree_gist": "m1"})
     run_alembic(SERVICE_ROOT / "alembic.ini", database_url)
-    app = create_app(settings_for_tests("seat", database_url))
+    app = create_app(settings_for_tests("seat", database_url, Settings))
     async with api_client(app) as client:
         await client.get("/api/m1/v1/...", headers=auth_headers(perms=["m1:seat:search"]))
 """
@@ -73,10 +73,11 @@ def auth_headers(**kwargs: Any) -> dict[str, str]:
     return {"Authorization": f"Bearer {token_for(**kwargs)}"}
 
 
-def settings_for_tests(
-    service: ServiceName, database_url: str, **overrides: Any
-) -> ServiceSettings:
-    return ServiceSettings(
+def settings_for_tests[S: ServiceSettings](
+    service: ServiceName, database_url: str, settings_cls: type[S], **overrides: Any
+) -> S:
+    """构造测试配置：关闭后台任务，令牌用测试密钥校验。settings_cls 传本服务的 Settings。"""
+    return settings_cls(
         service_name=service,
         env="test",
         database_url=database_url,

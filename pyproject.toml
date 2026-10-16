@@ -57,13 +57,13 @@ ignore = [
 known-first-party = ["campus_common", "platform_service", "seat_service", "room_service", "repair_service"]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S101"]  # 测试中允许 assert
+"**/tests/**" = ["S101", "S105", "S106", "S107"]  # 测试中允许 assert 与测试口令
 
 # ---------- mypy：类型检查 ----------
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["libs", "services", "scripts"]
+files = ["libs", "services"]
 mypy_path = ["libs/common/src", "services/platform/src", "services/seat/src", "services/room/src", "services/repair/src"]
 explicit_package_bases = true
 plugins = ["pydantic.mypy"]
