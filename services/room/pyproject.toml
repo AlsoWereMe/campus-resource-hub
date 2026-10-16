@@ -1,0 +1,16 @@
+[project]
+name = "room-service"
+version = "0.1.0"
+description = "room-service · M2 整教室预约与审批"
+requires-python = "==3.12.*"
+dependencies = ["campus-common"]
+
+[tool.uv.sources]
+campus-common = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/room_service"]
