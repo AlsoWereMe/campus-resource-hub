@@ -414,12 +414,14 @@ flowchart LR
 | --- | --- | --- | --- |
 | M1 组 | A1 | 预约域：检索、预约、历史、占用块与追溯、参数 | 15 |
 | | A2 | 履约域：签到与屏幕端、调度提醒、违约、运营统计 | 14 |
-| M2 组 | B1、B2 | M2 全部 + D-IAM + 流水线与环境 | 30（每人约 15） |
-| M3 组 | C1、C2 | M3 全部 + D-空间主数据 + D-通知 + D-审计 + 前端公共壳 | 31（每人约 15.5） |
+| M2 组 | B1 | M2 全部 | 19 |
+| | B2 | D-身份权限 + D-审计 + 流水线（暂缓） | 约 15 |
+| M3 组 | C1 | M3 全部 | 18 |
+| | C2 | D-空间主数据（管理部分）+ D-通知 + 代理插件（附加） | 约 16 |
 
-代理插件（附加项，5 点）由主功能最先稳定的组承接。
+骨架阶段已由组长完成公共库、登录鉴权、空间只读、本地环境与前端公共壳，上表为剩余工作；逐任务划分见 [docs/tasks.md](../tasks.md)，决策见 [docs/adr.md](../adr.md) ADR-003。
 
-依据：M1 是附件1 的主体、工作量最大，不再背公共层；IAM 与审批链的角色、审批人强相关，给 M2 组；空间主数据与报修位置、通知与派单 / 升级提醒强相关，审计与通知同为消息消费者、实现方式一致，一并给 M3 组。
+依据：M1 是附件1 的主体、工作量最大，不再背公共层；IAM 与审批链的角色、审批人强相关，给 M2 组；空间主数据与报修位置、通知与派单 / 升级提醒强相关，给 M3 组。
 
 **方案 B：独立平台组**
 
@@ -458,9 +460,8 @@ campus-resource-hub/
 │   ├── seat/                     # M1
 │   ├── room/                     # M2
 │   └── repair/                   # M3
-│       ├── src/                  # 服务代码：api / application / domain / infrastructure
+│       ├── src/<包名>/           # api / application / domain / infrastructure / seeds
 │       ├── migrations/           # 本服务的 Alembic 迁移链
-│       ├── seeds/                # 本服务的幂等种子脚本（基础 / 演示）
 │       └── tests/                # 单元、集成、契约测试
 ├── libs/common/                  # 非业务公共库（Python 包）：错误结构、traceId、鉴权、时钟、Outbox
 ├── contracts/                    # OpenAPI 与事件 Schema，按提供方分目录
@@ -470,7 +471,9 @@ campus-resource-hub/
 └── docs/
     ├── requirements/             # 需求规格：README（总览）+ d-platform / m1 / m2 / m3
     ├── architecture/             # 本文与架构图
-    └── adr/                      # 架构决策记录
+    ├── adr.md                    # 架构决策记录
+    ├── tasks.md                  # 任务卡
+    └── log.md                    # 过程日志
 ```
 
 CODEOWNERS 按上述目录指定模块组；`contracts/`、`libs/common/`、各服务 `db/migration/` 的变更须组内评审（任务书 §三「质量门禁」）。
@@ -479,7 +482,7 @@ CODEOWNERS 按上述目录指定模块组；`contracts/`、`libs/common/`、各�
 
 ## 12. 架构决策记录（ADR）
 
-> 每条决策落地时在 `docs/adr/` 写成独立文件（背景、选项、决定、理由）。
+> 每条决策的背景、考虑过的方案与后果见 [docs/adr.md](../adr.md)。
 
 | 编号 | 决策 | 当前决定 |
 | --- | --- | --- |

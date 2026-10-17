@@ -15,13 +15,15 @@
 services/<name>/
 ├── pyproject.toml
 ├── src/<package>/
-│   ├── api/              # 路由与请求 / 响应模型：只做参数校验与调用应用层
+│   ├── api/              # 路由与请求 / 响应模型（每个任务一个文件，已写好接口桩）
 │   ├── application/      # 用例：编排、事务、权限与数据范围校验
-│   ├── domain/           # 实体、状态机、业务规则：不依赖框架，便于单元测试与变异测试
-│   └── infrastructure/   # 仓储、对外客户端、消息收发、定时任务
-├── migrations/           # 本服务的 Alembic 迁移链（只新增，不修改已提交的迁移）
-├── seeds/                # 幂等种子脚本：base/（所有环境）与 demo/（dev、test）
-└── tests/                # unit/、integration/、contract/
+│   ├── domain/           # 实体、状态机、业务规则：不依赖框架，便于单元测试
+│   ├── infrastructure/   # ORM 模型（models.py）、仓储、对外客户端
+│   ├── seeds/            # 幂等种子：base（所有环境）与 demo（dev、test）
+│   ├── jobs.py           # 定时任务登记
+│   └── consumers.py      # 消息订阅登记
+├── migrations/           # 本服务的 Alembic 迁移链（只新增，不修改已合入的迁移）
+└── tests/                # 单元、集成、契约测试
 ```
 
 ## 规则

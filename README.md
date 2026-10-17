@@ -2,9 +2,11 @@
 
 校园资源服务平台 · 软件过程管理与工程伦理课程实践项目（PJ）。
 
-## 本地开发快速开始
+> **新成员只需读这一页。** 骨架已经能运行：登录、权限、空间数据、全部接口的契约都已就位，剩下的业务功能拆成了 36 张任务卡。
 
-**准备**：Docker（含 Compose v2）、[uv](https://docs.astral.sh/uv/)、make；前端另需 Node.js 24 与 pnpm。Windows 请在 WSL2 中操作。
+## 1. 第一次使用（约 10 分钟）
+
+**准备**：Docker（含 Compose v2）、[uv](https://docs.astral.sh/uv/)、make、Node.js 24 与 pnpm。Windows 请在 WSL2 中操作。
 
 ```bash
 make setup
@@ -15,43 +17,67 @@ make up
 ```
 
 ```bash
-make verify-db
+make web
 ```
 
-- `make setup`：从 `.env.example` 生成 `.env`，安装 Python 依赖；
-- `make up`：启动 PostgreSQL、RabbitMQ、Redis、Mailpit，并等待全部健康；
-- `make verify-db`：确认数据库已按服务账号与 schema 隔离；
-- `make help`：查看全部命令。提交前运行 `make check`。
+然后打开 http://127.0.0.1:8080，用下表的演示账号登录（口令都是 `Passw0rd!`，只用于本机）。
 
-| 组件 | 地址 |
+| 账号 | 角色 | 账号 | 角色 |
+| --- | --- | --- | --- |
+| `student1` | 学生（计算机学院） | `roomadmin1` | 教室管理员（三教） |
+| `student3` | 学生 + 学生组织负责人 | `resadmin1` | 资源管理员 |
+| `staff1` | 教职工 | `ops1` | 运营管理员 |
+| `approver1` | 院系审批人（计算机学院） | `dispatcher1` | 物业调度员 |
+| `tech1` | 维修人员（三教） | `supervisor1` | 物业主管 |
+
+系统管理员 `admin` 的口令为 `.env` 中的 `INITIAL_ADMIN_PASSWORD`。端口冲突时改 `.env` 中对应的 `*_PORT`。
+
+## 2. 领任务、开发
+
+1. 打开 [docs/tasks.md](docs/tasks.md)，选一个**席位**（A1、A2、B1、B2、C1、C2），在「席位认领」Issue 中留言；之后只做该席位的任务。
+2. 在你的 AI 编程助手中打开本仓库，输入：
+
+   ```text
+   做任务 M1-T04
+   ```
+
+   助手会按 `do-task` 流程：认领 Issue、建分支、读需求与契约、**给出方案并等你确认**、实现与测试、按规范提交、开合并请求。
+3. 你要做的三件事：**审方案**（不满意就让它改）、**审每次提交**（它会先问你）、**请同组成员评审合并请求**。
+4. 合并后，Issue 自动关闭；进度在 GitHub 的 Issues 与里程碑中查看。
+
+页面上标着「待实现 · 任务 X」的地方，就是该任务要写的页面；接口调用后返回 501 并给出任务编号的，就是该任务要实现的接口。
+
+## 3. 规范
+
+全部流程规范在 [AGENTS.md](AGENTS.md)（助手会自动读取），要点如下：
+
+- 先方案后实现；一个功能一个提交；提交说明遵循 Conventional Commits，写明需求编号与参与的模型。
+- 改接口、公共库、数据库迁移或其他模块，先问组长并请相关负责人评审；合并冲突由人处理。
+- 每条验收标准都要有测试；核心规则要故意改错一次，确认测试会失败；合并前 `make check` 必须通过。
+- 不提交密钥、`.env` 与真实个人信息；每个合并请求写一句伦理考量。
+
+## 4. 常用命令
+
+| 命令 | 作用 |
 | --- | --- |
-| PostgreSQL | `127.0.0.1:5432`，数据库 `campus` |
-| RabbitMQ 管理界面 | http://127.0.0.1:15672 |
-| Redis | `127.0.0.1:6379` |
-| Mailpit（捕获的邮件） | http://127.0.0.1:8025 |
+| `make up` / `make down` / `make reset` | 启动 / 停止 / 清空数据重来 |
+| `make logs s=seat` | 看某个服务的日志（platform、seat、room、repair） |
+| `make revision s=seat m="add booking"` | 改表后生成迁移 |
+| `make test s=seat` | 跑某个服务的测试 |
+| `make contracts` | 改了接口后导出契约并生成前端类型 |
+| `make check` | 提交前检查（后端 + 前端） |
+| `make help` | 全部命令 |
 
-端口与本机其他服务冲突时，在 `.env` 中修改对应的 `*_PORT`。账号与口令见 `.env`，只用于本机。
+各服务的接口文档：platform http://127.0.0.1:8001/docs、seat :8002、room :8003、repair :8004；邮件在 Mailpit http://127.0.0.1:8025 查看。
 
-## 目录
+## 5. 文档地图
 
-| 目录 | 内容 |
+| 文档 | 内容 |
 | --- | --- |
-| [services/](services/README.md) | 后端服务：platform（公共层 D）、seat（M1）、room（M2）、repair（M3） |
-| [libs/](libs/README.md) | 各服务共用的非业务公共库 |
-| [apps/](apps/README.md) | 前端（Next.js） |
-| [contracts/](contracts/README.md) | 接口与消息契约 |
-| `deploy/` | Compose 与数据库初始化脚本 |
-| `scripts/` | 辅助脚本 |
-| `docs/` | 需求、架构与决策记录 |
-
-## 文档
-
-| 文档 | 说明 |
-| --- | --- |
+| [docs/tasks.md](docs/tasks.md) | 席位、里程碑、36 张任务卡 |
+| [docs/requirements/](docs/requirements/README.md) | 需求（134 条，含验收标准）与决策 Q1 ~ Q24 |
+| [docs/architecture/architecture.md](docs/architecture/architecture.md) | 架构、模块边界、技术栈 |
+| [docs/adr.md](docs/adr.md) | 架构决策记录（含公共层归属） |
+| [docs/log.md](docs/log.md) | 过程日志 |
+| [AGENTS.md](AGENTS.md) | 流程与编码规范 |
 | [Pj-任务.pdf](Pj-任务.pdf) | 课程任务书 |
-| [需求总览](docs/requirements/README.md) | 约定、角色总表、跨模块集成、非功能需求、决策记录；新成员从这里开始 |
-| [公共层 D](docs/requirements/d-platform.md) | 身份与权限、空间与座位主数据、通知、审计 |
-| [M1 自习座位预约](docs/requirements/m1-seat-reservation.md) | 任务书附件1 |
-| [M2 整教室预约与审批](docs/requirements/m2-room-booking.md) | 权限门槛、申请、多级审批、超时撤销 |
-| [M3 物业报修工单](docs/requirements/m3-repair.md) | 上报、派单、维修、超时升级、验收评价 |
-| [系统架构设计](docs/architecture/architecture.md) | 抽象架构图、子模块职责、通信方式、部署与环境、分工 |
