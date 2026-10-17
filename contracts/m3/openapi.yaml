@@ -2,4 +2,1597 @@ openapi: 3.1.0
 info:
   title: m3 API
   version: v1
-paths: {}
+paths:
+  /api/m3/v1/categories:
+    get:
+      tags:
+      - M3 · 上报
+      summary: 故障类别字典（BR-M3-02）
+      operationId: categories_api_m3_v1_categories_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Category'
+                type: array
+                title: Response Categories Api M3 V1 Categories Get
+      security:
+      - HTTPBearer: []
+  /api/m3/v1/workorders/duplicates:
+    get:
+      tags:
+      - M3 · 上报
+      summary: 同房间同类别的未关闭工单，上报前提示可能重复（M3-RPT-03，P1）
+      operationId: duplicates_api_m3_v1_workorders_duplicates_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: roomId
+        in: query
+        required: true
+        schema:
+          type: integer
+          title: Roomid
+      - name: categoryCode
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Categorycode
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkOrderBrief'
+                title: Response Duplicates Api M3 V1 Workorders Duplicates Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders:
+    post:
+      tags:
+      - M3 · 上报
+      summary: 故障上报（M3-RPT-01）
+      description: 状态为待受理，计算受理截止，通知范围内调度员。同一 Idempotency-Key 只产生一张工单。
+      operationId: report_api_m3_v1_workorders_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkOrderCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - M3 · 工作台与统计
+      summary: 工单工作台（M3-QRY-02）
+      description: 调度员看范围内、维修人员看 assignedToMe、物业主管看全部；已升级的置顶。
+      operationId: workbench_api_m3_v1_workorders_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: 页码，从 1 开始
+          default: 1
+          title: Page
+        description: 页码，从 1 开始
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: 每页条数
+          default: 20
+          title: Size
+        description: 每页条数
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              $ref: '#/components/schemas/WorkOrderStatus'
+          - type: 'null'
+          title: Status
+      - name: categoryCode
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Categorycode
+      - name: buildingId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Buildingid
+      - name: urgency
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/Urgency'
+          - type: 'null'
+          title: Urgency
+      - name: escalated
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Escalated
+      - name: assignedToMe
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          title: Assignedtome
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_WorkOrderOut_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/mine:
+    get:
+      tags:
+      - M3 · 上报
+      summary: 我的报修（M3-QRY-01）
+      operationId: my_work_orders_api_m3_v1_workorders_mine_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: 页码，从 1 开始
+          default: 1
+          title: Page
+        description: 页码，从 1 开始
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: 每页条数
+          default: 20
+          title: Size
+        description: 每页条数
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              $ref: '#/components/schemas/WorkOrderStatus'
+          - type: 'null'
+          title: Status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_WorkOrderOut_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/{work_order_id}:
+    get:
+      tags:
+      - M3 · 上报
+      summary: 工单详情与时间线（M3-QRY-01）
+      operationId: get_work_order_api_m3_v1_workorders__work_order_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - M3 · 派单
+      summary: 调整类别或紧急程度（M3-DSP-01、M3-ESC-03）
+      operationId: patch_work_order_api_m3_v1_workorders__work_order_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkOrderPatch'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/{work_order_id}/cancel:
+    post:
+      tags:
+      - M3 · 上报
+      summary: 取消工单（M3-RPT-04）
+      description: 只能在待受理、已派单时取消；维修中只能由调度员关闭（BR-M3-09）。
+      operationId: cancel_api_m3_v1_workorders__work_order_id__cancel_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/admin/stats:
+    get:
+      tags:
+      - M3 · 工作台与统计
+      summary: 工单统计（M3-QRY-03，P1）
+      operationId: stats_api_m3_v1_admin_stats_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: dateFrom
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Datefrom
+      - name: dateTo
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Dateto
+      - name: groupBy
+        in: query
+        required: false
+        schema:
+          enum:
+          - building
+          - category
+          - technician
+          type: string
+          default: building
+          title: Groupby
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatsRow'
+                title: Response Stats Api M3 V1 Admin Stats Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/admin/rooms/{room_id}/workorders:
+    get:
+      tags:
+      - M3 · 工作台与统计
+      summary: 按房间查历史工单（M3-QRY-04，P1）
+      operationId: room_history_api_m3_v1_admin_rooms__room_id__workorders_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkOrderBrief'
+                title: Response Room History Api M3 V1 Admin Rooms  Room Id  Workorders Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/{work_order_id}/attachments:
+    post:
+      tags:
+      - M3 · 工作台与统计
+      summary: 上传图片附件（M3-RPT-02，P1）
+      description: 每张工单至多 3 张，每张 ≤ 5 MB，仅 jpg / png（BR-M3-14）；文件存挂载卷（决策 Q24）。
+      operationId: upload_attachment_api_m3_v1_workorders__work_order_id__attachments_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_attachment_api_m3_v1_workorders__work_order_id__attachments_post'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/attachments/{attachment_id}:
+    get:
+      tags:
+      - M3 · 工作台与统计
+      summary: 下载图片附件（M3-RPT-02）
+      operationId: download_attachment_api_m3_v1_attachments__attachment_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: attachment_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Attachment Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            image/jpeg: {}
+            image/png: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/technicians:
+    get:
+      tags:
+      - M3 · 派单
+      summary: 范围覆盖该楼宇的维修人员及在办数（M3-DSP-01）
+      description: 人员来自 IAM-USER-02（按角色与范围查询用户）。
+      operationId: technicians_api_m3_v1_technicians_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: buildingId
+        in: query
+        required: true
+        schema:
+          type: integer
+          title: Buildingid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TechnicianLoad'
+                title: Response Technicians Api M3 V1 Technicians Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/{work_order_id}/assign:
+    post:
+      tags:
+      - M3 · 派单
+      summary: 受理并派单（M3-DSP-01）
+      operationId: assign_api_m3_v1_workorders__work_order_id__assign_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/{work_order_id}/reassign:
+    post:
+      tags:
+      - M3 · 派单
+      summary: 改派（M3-DSP-02）
+      description: 已派单、维修中可改派；不影响下架状态与当前阶段截止时刻。
+      operationId: reassign_api_m3_v1_workorders__work_order_id__reassign_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReassignIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/{work_order_id}/return:
+    post:
+      tags:
+      - M3 · 派单
+      summary: 维修人员退回工单（M3-DSP-03，P1）
+      operationId: return_work_order_api_m3_v1_workorders__work_order_id__return_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/{work_order_id}/close:
+    post:
+      tags:
+      - M3 · 派单
+      summary: 关闭无效、重复或无需维修的工单（M3-DSP-05）
+      description: 若在维修中则同时释放 M1 下架。
+      operationId: close_api_m3_v1_workorders__work_order_id__close_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/{work_order_id}/start:
+    post:
+      tags:
+      - M3 · 维修
+      summary: 开始维修，写回下架（M3-WRK-01、M3-INT-01）
+      description: 影响范围默认整间（决策 Q7）；只有定位到房间的工单才写回。
+      operationId: start_api_m3_v1_workorders__work_order_id__start_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImpactIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/{work_order_id}/impact:
+    put:
+      tags:
+      - M3 · 维修
+      summary: 调整影响范围（M3-WRK-02，P1）
+      operationId: change_impact_api_m3_v1_workorders__work_order_id__impact_put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImpactIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/{work_order_id}/notes:
+    post:
+      tags:
+      - M3 · 维修
+      summary: 追加进度备注（M3-WRK-03，P1）
+      operationId: add_note_api_m3_v1_workorders__work_order_id__notes_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/{work_order_id}/complete:
+    post:
+      tags:
+      - M3 · 维修
+      summary: 完工提交（M3-WRK-04）
+      description: 进入待验收；下架保持到验收通过（BR-M3-07）。
+      operationId: complete_api_m3_v1_workorders__work_order_id__complete_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/admin/workorders/{work_order_id}/writeback/retry:
+    post:
+      tags:
+      - M3 · 维修
+      summary: 手动重试失败的写回（M3-INT-03）
+      operationId: retry_writeback_api_m3_v1_admin_workorders__work_order_id__writeback_retry_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/{work_order_id}/accept:
+    post:
+      tags:
+      - M3 · 验收
+      summary: 验收与评价（M3-ACC-01、02）
+      description: 通过：已完成并释放下架；不通过：回到维修中，修复时限重新计算。评价只能提交一次。
+      operationId: accept_api_m3_v1_workorders__work_order_id__accept_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/workorders/{work_order_id}/accept-on-behalf:
+    post:
+      tags:
+      - M3 · 验收
+      summary: 调度员代验收（M3-ACC-04，P1）
+      operationId: accept_on_behalf_api_m3_v1_workorders__work_order_id__accept_on_behalf_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Work Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m3/v1/admin/settings:
+    get:
+      tags:
+      - M3 · 时限与类别
+      summary: 查看处理时限等 M3 参数
+      operationId: list_settings_api_m3_v1_admin_settings_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Setting'
+                type: array
+                title: Response List Settings Api M3 V1 Admin Settings Get
+      security:
+      - HTTPBearer: []
+    put:
+      tags:
+      - M3 · 时限与类别
+      summary: 修改处理时限（M3-ESC-04）
+      description: 只影响此后进入新阶段的工单（BR-M3-16）；写入审计。
+      operationId: update_settings_api_m3_v1_admin_settings_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsUpdate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Setting'
+                type: array
+                title: Response Update Settings Api M3 V1 Admin Settings Put
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/m3/v1/admin/categories:
+    put:
+      tags:
+      - M3 · 时限与类别
+      summary: 维护故障类别字典（BR-M3-02）
+      operationId: upsert_categories_api_m3_v1_admin_categories_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/CategoryIn'
+              type: array
+              title: Body
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/CategoryIn'
+                type: array
+                title: Response Upsert Categories Api M3 V1 Admin Categories Put
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+components:
+  schemas:
+    AcceptIn:
+      properties:
+        passed:
+          type: boolean
+          title: Passed
+        reason:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Reason
+          description: 不通过时必填（BR-M3-10）
+        rating:
+          anyOf:
+          - type: integer
+            maximum: 5.0
+            minimum: 1.0
+          - type: 'null'
+          title: Rating
+          description: 通过时可评 1 ~ 5 星（BR-M3-12）
+        comment:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Comment
+      type: object
+      required:
+      - passed
+      title: AcceptIn
+    AssignIn:
+      properties:
+        technicianId:
+          type: integer
+          title: Technicianid
+        categoryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Categorycode
+        urgency:
+          anyOf:
+          - $ref: '#/components/schemas/Urgency'
+          - type: 'null'
+      type: object
+      required:
+      - technicianId
+      title: AssignIn
+    AttachmentOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        fileName:
+          type: string
+          title: Filename
+        url:
+          type: string
+          title: Url
+        uploadedAt:
+          type: string
+          format: date-time
+          title: Uploadedat
+      type: object
+      required:
+      - id
+      - fileName
+      - url
+      - uploadedAt
+      title: AttachmentOut
+    Body_upload_attachment_api_m3_v1_workorders__work_order_id__attachments_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_upload_attachment_api_m3_v1_workorders__work_order_id__attachments_post
+    Category:
+      properties:
+        code:
+          type: string
+          title: Code
+        name:
+          type: string
+          title: Name
+      type: object
+      required:
+      - code
+      - name
+      title: Category
+    CategoryIn:
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z_]{2,32}$
+          title: Code
+        name:
+          type: string
+          maxLength: 20
+          title: Name
+        enabled:
+          type: boolean
+          title: Enabled
+          default: true
+      type: object
+      required:
+      - code
+      - name
+      title: CategoryIn
+    CompleteIn:
+      properties:
+        resolution:
+          type: string
+          maxLength: 500
+          minLength: 1
+          title: Resolution
+          description: 处理说明必填
+        attachmentIds:
+          items:
+            type: integer
+          type: array
+          title: Attachmentids
+      type: object
+      required:
+      - resolution
+      title: CompleteIn
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ImpactIn:
+      properties:
+        impactScope:
+          $ref: '#/components/schemas/ImpactScope'
+          default: ROOM
+        seatIds:
+          items:
+            type: integer
+          type: array
+          title: Seatids
+          description: impact_scope=SEATS 时必填
+      type: object
+      title: ImpactIn
+    ImpactScope:
+      type: string
+      enum:
+      - ROOM
+      - SEATS
+      title: ImpactScope
+    NoteIn:
+      properties:
+        content:
+          type: string
+          maxLength: 500
+          minLength: 1
+          title: Content
+      type: object
+      required:
+      - content
+      title: NoteIn
+    Page_WorkOrderOut_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/WorkOrderOut'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        size:
+          type: integer
+          title: Size
+      type: object
+      required:
+      - items
+      - total
+      - page
+      - size
+      title: Page[WorkOrderOut]
+    ReasonIn:
+      properties:
+        reason:
+          type: string
+          maxLength: 200
+          minLength: 1
+          title: Reason
+      type: object
+      required:
+      - reason
+      title: ReasonIn
+    ReassignIn:
+      properties:
+        technicianId:
+          type: integer
+          title: Technicianid
+        reason:
+          type: string
+          maxLength: 200
+          minLength: 1
+          title: Reason
+      type: object
+      required:
+      - technicianId
+      - reason
+      title: ReassignIn
+    Setting:
+      properties:
+        key:
+          type: string
+          title: Key
+          description: 如 m3.sla.accept.normal_minutes
+        value:
+          type: integer
+          title: Value
+        default:
+          type: integer
+          title: Default
+        min:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Min
+        max:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Max
+        description:
+          type: string
+          title: Description
+      type: object
+      required:
+      - key
+      - value
+      - default
+      - description
+      title: Setting
+    SettingsUpdate:
+      properties:
+        values:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Values
+      type: object
+      required:
+      - values
+      title: SettingsUpdate
+    Stage:
+      type: string
+      enum:
+      - ACCEPT
+      - RESPOND
+      - REPAIR
+      title: Stage
+    StatsRow:
+      properties:
+        key:
+          type: string
+          title: Key
+        total:
+          type: integer
+          title: Total
+        avgAcceptMinutes:
+          type: number
+          title: Avgacceptminutes
+        avgRespondMinutes:
+          type: number
+          title: Avgrespondminutes
+        avgRepairMinutes:
+          type: number
+          title: Avgrepairminutes
+        slaRate:
+          type: number
+          title: Slarate
+        avgRating:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Avgrating
+      type: object
+      required:
+      - key
+      - total
+      - avgAcceptMinutes
+      - avgRespondMinutes
+      - avgRepairMinutes
+      - slaRate
+      - avgRating
+      title: StatsRow
+    TechnicianLoad:
+      properties:
+        userId:
+          type: integer
+          title: Userid
+        name:
+          type: string
+          title: Name
+        openCount:
+          type: integer
+          title: Opencount
+          description: 在办工单数
+      type: object
+      required:
+      - userId
+      - name
+      - openCount
+      title: TechnicianLoad
+    TimelineEntry:
+      properties:
+        at:
+          type: string
+          format: date-time
+          title: At
+        actorId:
+          type: string
+          title: Actorid
+        actorName:
+          type: string
+          title: Actorname
+        action:
+          type: string
+          title: Action
+          description: 如 SUBMIT、ASSIGN、START、NOTE、COMPLETE、ESCALATE、ACCEPT
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+      type: object
+      required:
+      - at
+      - actorId
+      - actorName
+      - action
+      title: TimelineEntry
+    Urgency:
+      type: string
+      enum:
+      - NORMAL
+      - URGENT
+      title: Urgency
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    WorkOrderBrief:
+      properties:
+        id:
+          type: integer
+          title: Id
+        roomName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Roomname
+        categoryName:
+          type: string
+          title: Categoryname
+        status:
+          $ref: '#/components/schemas/WorkOrderStatus'
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+      type: object
+      required:
+      - id
+      - roomName
+      - categoryName
+      - status
+      - createdAt
+      title: WorkOrderBrief
+    WorkOrderCreate:
+      properties:
+        buildingId:
+          type: integer
+          title: Buildingid
+        roomId:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Roomid
+          description: 可选，含公共区域
+        seatId:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Seatid
+          description: 可选，须属于所选房间（BR-M3-01）
+        categoryCode:
+          type: string
+          title: Categorycode
+        urgency:
+          $ref: '#/components/schemas/Urgency'
+          default: NORMAL
+        description:
+          type: string
+          maxLength: 500
+          minLength: 10
+          title: Description
+        contactPhone:
+          anyOf:
+          - type: string
+            maxLength: 32
+          - type: 'null'
+          title: Contactphone
+      type: object
+      required:
+      - buildingId
+      - categoryCode
+      - description
+      title: WorkOrderCreate
+    WorkOrderOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        buildingId:
+          type: integer
+          title: Buildingid
+        buildingName:
+          type: string
+          title: Buildingname
+        roomId:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Roomid
+        roomName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Roomname
+        seatId:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Seatid
+        seatCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Seatcode
+        categoryCode:
+          type: string
+          title: Categorycode
+        categoryName:
+          type: string
+          title: Categoryname
+        urgency:
+          $ref: '#/components/schemas/Urgency'
+        description:
+          type: string
+          title: Description
+        contactPhone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Contactphone
+        reporterId:
+          type: integer
+          title: Reporterid
+        reporterName:
+          type: string
+          title: Reportername
+        assigneeId:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Assigneeid
+        assigneeName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assigneename
+        status:
+          $ref: '#/components/schemas/WorkOrderStatus'
+        stage:
+          anyOf:
+          - $ref: '#/components/schemas/Stage'
+          - type: 'null'
+        stageDeadline:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Stagedeadline
+          description: 当前处理阶段的截止时刻（BR-M3-04）
+        escalationLevel:
+          type: integer
+          title: Escalationlevel
+          description: 0 未升级；1 已通知调度员；2 已通知物业主管
+        impactScope:
+          anyOf:
+          - $ref: '#/components/schemas/ImpactScope'
+          - type: 'null'
+        impactSeatIds:
+          items:
+            type: integer
+          type: array
+          title: Impactseatids
+        resolution:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Resolution
+        rating:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Rating
+        comment:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Comment
+        attachments:
+          items:
+            $ref: '#/components/schemas/AttachmentOut'
+          type: array
+          title: Attachments
+        timeline:
+          items:
+            $ref: '#/components/schemas/TimelineEntry'
+          type: array
+          title: Timeline
+        writeback:
+          type: string
+          enum:
+          - NONE
+          - SYNCING
+          - SYNCED
+          - FAILED
+          title: Writeback
+          description: 在 M1 中的下架同步状态（M3-INT-03）
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+      type: object
+      required:
+      - id
+      - buildingId
+      - buildingName
+      - roomId
+      - roomName
+      - seatId
+      - seatCode
+      - categoryCode
+      - categoryName
+      - urgency
+      - description
+      - contactPhone
+      - reporterId
+      - reporterName
+      - assigneeId
+      - assigneeName
+      - status
+      - stage
+      - stageDeadline
+      - escalationLevel
+      - impactScope
+      - impactSeatIds
+      - resolution
+      - rating
+      - comment
+      - attachments
+      - timeline
+      - writeback
+      - createdAt
+      title: WorkOrderOut
+    WorkOrderPatch:
+      properties:
+        categoryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Categorycode
+        urgency:
+          anyOf:
+          - $ref: '#/components/schemas/Urgency'
+          - type: 'null'
+      type: object
+      title: WorkOrderPatch
+    WorkOrderStatus:
+      type: string
+      enum:
+      - SUBMITTED
+      - ASSIGNED
+      - IN_REPAIR
+      - PENDING_ACCEPTANCE
+      - COMPLETED
+      - CANCELLED
+      - CLOSED
+      title: WorkOrderStatus
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      description: IAM 签发的访问令牌
+      scheme: bearer
