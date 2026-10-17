@@ -153,13 +153,699 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /internal/iam/v1/users:
+    get:
+      tags:
+      - IAM · 内部
+      summary: 按角色与数据范围查询有效用户（IAM-USER-02）
+      description: 返回拥有该角色、且该授权的数据范围覆盖给定院系或楼宇的启用用户；全校范围总是覆盖。
+      operationId: users_by_role_internal_iam_v1_users_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: role
+        in: query
+        required: true
+        schema:
+          type: string
+          description: 角色编码，如 technician
+          title: Role
+        description: 角色编码，如 technician
+      - name: departmentId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          description: 数据范围须覆盖该院系
+          title: Departmentid
+        description: 数据范围须覆盖该院系
+      - name: buildingId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          description: 数据范围须覆盖该楼宇
+          title: Buildingid
+        description: 数据范围须覆盖该楼宇
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserBrief'
+                title: Response Users By Role Internal Iam V1 Users Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /internal/iam/v1/users/batch:
+    get:
+      tags:
+      - IAM · 内部
+      summary: 按 ID 批量查询用户摘要（展示姓名、发送通知）
+      operationId: users_by_ids_internal_iam_v1_users_batch_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: ids
+        in: query
+        required: true
+        schema:
+          type: array
+          items:
+            type: integer
+          title: Ids
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserBrief'
+                title: Response Users By Ids Internal Iam V1 Users Batch Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/iam/v1/users:
+    get:
+      tags:
+      - IAM · 用户与院系
+      summary: 用户列表
+      operationId: list_users_api_iam_v1_users_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: 页码，从 1 开始
+          default: 1
+          title: Page
+        description: 页码，从 1 开始
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: 每页条数
+          default: 20
+          title: Size
+        description: 每页条数
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          description: 学号、工号或姓名
+          title: Keyword
+        description: 学号、工号或姓名
+      - name: departmentId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Departmentid
+      - name: role
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Role
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - ACTIVE
+            - DISABLED
+            type: string
+          - type: 'null'
+          title: Status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_UserOut_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - IAM · 用户与院系
+      summary: 新建用户（默认授予学生或教职工角色）
+      operationId: create_user_api_iam_v1_users_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/iam/v1/users/import:
+    post:
+      tags:
+      - IAM · 用户与院系
+      summary: CSV 批量导入用户（IAM-AUTH-02）
+      description: 列：学号、姓名、院系编码、邮箱、初始角色。全部校验通过才导入，否则按行号列出全部错误。
+      operationId: import_users_api_iam_v1_users_import_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_import_users_api_iam_v1_users_import_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResult'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/iam/v1/users/{user_id}:
+    get:
+      tags:
+      - IAM · 用户与院系
+      summary: 用户详情
+      operationId: get_user_api_iam_v1_users__user_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: User Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - IAM · 用户与院系
+      summary: 修改用户（IAM-USER-01）
+      description: 院系变更后可见的院系专属自习室随之变化，已有预约不受影响。
+      operationId: update_user_api_iam_v1_users__user_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: User Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/iam/v1/users/{user_id}/disable:
+    post:
+      tags:
+      - IAM · 用户与院系
+      summary: 停用账号（IAM-AUTH-02）
+      description: 立即不能登录，刷新令牌全部失效；已签发访问令牌在有效期（≤ 15 分钟）后失效。
+      operationId: disable_user_api_iam_v1_users__user_id__disable_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: User Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/iam/v1/users/{user_id}/enable:
+    post:
+      tags:
+      - IAM · 用户与院系
+      summary: 启用账号
+      operationId: enable_user_api_iam_v1_users__user_id__enable_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: User Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/iam/v1/departments:
+    get:
+      tags:
+      - IAM · 用户与院系
+      summary: 院系列表（IAM-USER-01）
+      operationId: list_departments_api_iam_v1_departments_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/DepartmentOut'
+                type: array
+                title: Response List Departments Api Iam V1 Departments Get
+      security:
+      - HTTPBearer: []
+    post:
+      tags:
+      - IAM · 用户与院系
+      summary: 新增院系
+      operationId: create_department_api_iam_v1_departments_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentIn'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/iam/v1/departments/{department_id}:
+    patch:
+      tags:
+      - IAM · 用户与院系
+      summary: 修改院系
+      operationId: update_department_api_iam_v1_departments__department_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: department_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Department Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/iam/v1/permissions:
+    get:
+      tags:
+      - IAM · 角色与授权
+      summary: 权限点清单（IAM-ROLE-01，只读）
+      operationId: permissions_api_iam_v1_permissions_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PermissionOut'
+                type: array
+                title: Response Permissions Api Iam V1 Permissions Get
+      security:
+      - HTTPBearer: []
+  /api/iam/v1/roles:
+    get:
+      tags:
+      - IAM · 角色与授权
+      summary: 角色列表
+      operationId: list_roles_api_iam_v1_roles_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RoleOut'
+                type: array
+                title: Response List Roles Api Iam V1 Roles Get
+      security:
+      - HTTPBearer: []
+    post:
+      tags:
+      - IAM · 角色与授权
+      summary: 新建角色（IAM-ROLE-02）
+      operationId: create_role_api_iam_v1_roles_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleIn'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/iam/v1/roles/{role_id}:
+    get:
+      tags:
+      - IAM · 角色与授权
+      summary: 角色详情
+      operationId: get_role_api_iam_v1_roles__role_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Role Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - IAM · 角色与授权
+      summary: 修改角色（IAM-ROLE-02）
+      description: 系统管理员角色不可减少权限；权限点必须来自清单；写入审计。
+      operationId: update_role_api_iam_v1_roles__role_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Role Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RolePatch'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - IAM · 角色与授权
+      summary: 删除角色（IAM-ROLE-02）
+      description: 仍有用户绑定时拒绝并提示人数；系统管理员角色不可删除。
+      operationId: delete_role_api_iam_v1_roles__role_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Role Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/iam/v1/users/{user_id}/roles:
+    get:
+      tags:
+      - IAM · 角色与授权
+      summary: 用户的角色与数据范围（IAM-ROLE-03）
+      operationId: user_roles_api_iam_v1_users__user_id__roles_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: User Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoleGrant'
+                title: Response User Roles Api Iam V1 Users  User Id  Roles Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    put:
+      tags:
+      - IAM · 角色与授权
+      summary: 设置用户的角色与数据范围（IAM-ROLE-03、04）
+      description: 整体替换；一人可多角色，权限取并集；写入审计。
+      operationId: set_user_roles_api_iam_v1_users__user_id__roles_put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: User Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/RoleGrant'
+              title: Body
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoleGrant'
+                title: Response Set User Roles Api Iam V1 Users  User Id  Roles Put
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
 tags:
 - name: IAM · 登录
   description: 登录、令牌、当前用户（已实现）
 - name: IAM · 内部
-  description: JWKS、服务凭证（已实现）；网关不对外暴露
+  description: JWKS、服务凭证（已实现）；按角色查询用户（D-T01）
+- name: IAM · 用户与院系
+  description: 任务 D-T02
+- name: IAM · 角色与授权
+  description: 任务 D-T03
 components:
   schemas:
+    Body_import_users_api_iam_v1_users_import_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_import_users_api_iam_v1_users_import_post
+    DepartmentIn:
+      properties:
+        code:
+          type: string
+          maxLength: 32
+          minLength: 1
+          title: Code
+        name:
+          type: string
+          maxLength: 100
+          minLength: 1
+          title: Name
+      type: object
+      required:
+      - code
+      - name
+      title: DepartmentIn
+    DepartmentOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        code:
+          type: string
+          title: Code
+        name:
+          type: string
+          title: Name
+      type: object
+      required:
+      - id
+      - code
+      - name
+      title: DepartmentOut
     HTTPValidationError:
       properties:
         detail:
@@ -169,6 +855,35 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
+    ImportIssue:
+      properties:
+        line:
+          type: integer
+          title: Line
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+      - line
+      - message
+      title: ImportIssue
+    ImportResult:
+      properties:
+        imported:
+          type: integer
+          title: Imported
+        errors:
+          items:
+            $ref: '#/components/schemas/ImportIssue'
+          type: array
+          title: Errors
+          description: 有任何错误则整批不导入（IAM-AUTH-02）
+      type: object
+      required:
+      - imported
+      - errors
+      title: ImportResult
     Jwks:
       properties:
         keys:
@@ -249,6 +964,29 @@ components:
       - roles
       - permissions
       title: MeOut
+    Page_UserOut_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/UserOut'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        size:
+          type: integer
+          title: Size
+      type: object
+      required:
+      - items
+      - total
+      - page
+      - size
+      title: Page[UserOut]
     PasswordChangeIn:
       properties:
         oldPassword:
@@ -264,6 +1002,19 @@ components:
       - oldPassword
       - newPassword
       title: PasswordChangeIn
+    PermissionOut:
+      properties:
+        code:
+          type: string
+          title: Code
+        description:
+          type: string
+          title: Description
+      type: object
+      required:
+      - code
+      - description
+      title: PermissionOut
     RefreshIn:
       properties:
         refreshToken:
@@ -273,6 +1024,126 @@ components:
       required:
       - refreshToken
       title: RefreshIn
+    RoleGrant:
+      properties:
+        roleId:
+          type: integer
+          title: Roleid
+        scopeAll:
+          type: boolean
+          title: Scopeall
+          default: false
+        buildingIds:
+          items:
+            type: integer
+          type: array
+          title: Buildingids
+        departmentIds:
+          items:
+            type: integer
+          type: array
+          title: Departmentids
+      type: object
+      required:
+      - roleId
+      title: RoleGrant
+    RoleIn:
+      properties:
+        code:
+          type: string
+          pattern: ^[a-z_]{2,64}$
+          title: Code
+        name:
+          type: string
+          maxLength: 100
+          title: Name
+        description:
+          type: string
+          maxLength: 500
+          title: Description
+          default: ''
+        permissions:
+          items:
+            type: string
+          type: array
+          title: Permissions
+        enabled:
+          type: boolean
+          title: Enabled
+          default: true
+      type: object
+      required:
+      - code
+      - name
+      - permissions
+      title: RoleIn
+    RoleOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        code:
+          type: string
+          title: Code
+        name:
+          type: string
+          title: Name
+        description:
+          type: string
+          title: Description
+        builtin:
+          type: boolean
+          title: Builtin
+        enabled:
+          type: boolean
+          title: Enabled
+        permissions:
+          items:
+            type: string
+          type: array
+          title: Permissions
+        userCount:
+          type: integer
+          title: Usercount
+      type: object
+      required:
+      - id
+      - code
+      - name
+      - description
+      - builtin
+      - enabled
+      - permissions
+      - userCount
+      title: RoleOut
+    RolePatch:
+      properties:
+        name:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Description
+        permissions:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Permissions
+        enabled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Enabled
+      type: object
+      title: RolePatch
     ServiceTokenRequest:
       properties:
         clientId:
@@ -309,6 +1180,183 @@ components:
       - accessToken
       - expiresIn
       title: TokenResponse
+    UserBrief:
+      properties:
+        id:
+          type: integer
+          title: Id
+        username:
+          type: string
+          title: Username
+        name:
+          type: string
+          title: Name
+        userType:
+          type: string
+          enum:
+          - student
+          - staff
+          title: Usertype
+        departmentId:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Departmentid
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+      type: object
+      required:
+      - id
+      - username
+      - name
+      - userType
+      - departmentId
+      - email
+      title: UserBrief
+    UserCreate:
+      properties:
+        username:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Username
+        name:
+          type: string
+          maxLength: 100
+          minLength: 1
+          title: Name
+        userType:
+          type: string
+          enum:
+          - student
+          - staff
+          title: Usertype
+        departmentId:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Departmentid
+        email:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Email
+        phone:
+          anyOf:
+          - type: string
+            maxLength: 32
+          - type: 'null'
+          title: Phone
+        initialPassword:
+          type: string
+          maxLength: 128
+          minLength: 8
+          title: Initialpassword
+      type: object
+      required:
+      - username
+      - name
+      - userType
+      - initialPassword
+      title: UserCreate
+    UserOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        username:
+          type: string
+          title: Username
+          description: 学号或工号
+        name:
+          type: string
+          title: Name
+        userType:
+          type: string
+          enum:
+          - student
+          - staff
+          title: Usertype
+        departmentId:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Departmentid
+        departmentName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Departmentname
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - DISABLED
+          title: Status
+        roles:
+          items:
+            type: string
+          type: array
+          title: Roles
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+      type: object
+      required:
+      - id
+      - username
+      - name
+      - userType
+      - departmentId
+      - departmentName
+      - email
+      - phone
+      - status
+      - roles
+      - createdAt
+      title: UserOut
+    UserUpdate:
+      properties:
+        name:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Name
+        departmentId:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Departmentid
+        email:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Email
+        phone:
+          anyOf:
+          - type: string
+            maxLength: 32
+          - type: 'null'
+          title: Phone
+      type: object
+      title: UserUpdate
     ValidationError:
       properties:
         loc:
