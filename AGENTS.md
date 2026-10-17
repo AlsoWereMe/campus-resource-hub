@@ -87,7 +87,7 @@
 - 测试必须验证行为：不断言常量、不靠空分支凑覆盖、不 mock 被测逻辑本身；集成测试用真实 PostgreSQL（Testcontainers，见各服务 `tests/conftest.py`）。
 - 核心规则与状态机：**故意改错一处实现，确认测试失败**，再改回；在合并请求中写明做了哪次破坏。
 - 时间相关逻辑用可注入时钟测试；联调时用 `PUT /internal/test/clock` 推进时间、`POST /internal/test/jobs/<name>` 立即触发任务（仅非生产环境）。
-- 合并前 `make check` 必须全部通过（后端 lint、类型、契约一致、测试，前端类型与测试）。流水线（任务 X-T02）建成前，这是唯一的自动门槛。
+- 推送前在本地跑 `make check`（后端 lint、类型、契约一致、测试，前端类型与测试）。合并请求必须通过 CI 的 `backend`、`frontend` 两项检查（`.github/workflows/ci.yml`，另含前端生成类型一致与静态构建），不通过不能合并。CI 失败时在本地复现并修复，不要靠反复重跑碰运气。
 
 ## 6. 版本管理
 

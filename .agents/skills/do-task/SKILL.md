@@ -71,7 +71,8 @@ git push -u origin HEAD
 gh pr create --base main --title "<type>(<scope>): <任务编号> <标题>" --body-file <填好的模板>
 ```
 
-4. 告诉用户：合并请求链接、需要谁评审、还有哪些未完成或待确认。
+4. 等 CI 的 `backend`、`frontend` 两项检查通过（`gh pr checks --watch`）；失败就在本地复现、修复，按提交规范再提交推送。
+5. 告诉用户：合并请求链接、CI 结果、需要谁评审、还有哪些未完成或待确认。
 
 ## 禁止
 
