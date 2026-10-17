@@ -16,3 +16,4 @@
 | 2026-10-17 | 骨架：前端壳 | 登录、令牌刷新、按权限菜单、参考页、29 个占位页（#5） | `next dev` 会自动生成 `apps/web/AGENTS.md`，已关闭并把提醒并入 `apps/README.md` |
 | 2026-10-17 | 流程规范与任务 | AGENTS.md 覆盖任务书的全部开发规范；`docs/tasks.md` 36 个任务、6 个席位；do-task skill；PR 模板、CODEOWNERS、ADR；GitHub Issues 与里程碑 | CI/CD 按组长要求暂缓，列为任务 X-T02 |
 | 2026-10-17 | CI 上线；X-T02 改为持续部署 | 合并请求自动跑 `backend`、`frontend` 两项检查（#44）；X-T02 解除暂缓，缩为 CD，服务器到位前部署到 Actions 临时环境（ADR-014） | 用临时合并请求 #45 故意改错登录锁定阈值，`backend` 失败在对应测试上，确认 CI 能拦下；X-T02 新范围经组长审批后合并 |
+| 2026-10-17 | Issue 表单；main 设必过检查 | 「缺陷」「变更请求」两种表单，关闭空白 Issue；改契约、跨模块、改需求先开变更请求，讨论与结论留在 Issue（#46）；`backend`、`frontend` 设为 main 的必过检查，且须与 main 同步后才能合并 | #44 与 #46 都要追加日志行，为避免冲突先合并 #44，再把 main 合入 #46 后补本行 |
