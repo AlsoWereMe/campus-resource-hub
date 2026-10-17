@@ -97,7 +97,7 @@ async def login(body: LoginIn, request: Request, clock: ClockDep) -> TokenRespon
             )
         elif not verify_password(user.password_hash, body.password):
             user.failed_logins += 1
-            if user.failed_logins >= settings.max_failed_logins:
+            if user.failed_logins > settings.max_failed_logins:
                 user.failed_logins = 0
                 user.locked_until = now + timedelta(minutes=settings.lock_minutes)
             error = Unauthorized(INVALID, code="INVALID_CREDENTIALS")
