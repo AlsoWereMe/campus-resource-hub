@@ -18,7 +18,7 @@ Closes #<!-- Issue 号 -->　任务编号：<!-- 如 M1-T04 -->
 
 - [ ] `make check` 全部通过
 - [ ] 追踪矩阵已更新
-- [ ] 改了契约 / `libs/common` / 迁移 / 其他模块：已附变更请求 Issue（`Refs #N`）并请相关负责人评审
+- [ ] 改了契约 / `libs/common` / 迁移 / 其他模块：已附 `Change request` Issue（`Refs #N`）并请相关负责人评审
 - [ ] 没有提交密钥、`.env`、真实个人信息
 
 ## 伦理考量

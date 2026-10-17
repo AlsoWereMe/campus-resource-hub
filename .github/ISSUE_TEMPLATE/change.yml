@@ -1,6 +1,7 @@
-name: 变更请求
+# name 至少 3 个字符，否则 GitHub 不显示该表单（原名「缺陷」只有 2 个字符时出现过）。
+name: Change request
 description: 要改契约、改别的模块或公共层、改需求或业务规则，或者需求有歧义需要澄清
-title: "[变更] "
+title: "[change] "
 labels: [change]
 body:
   - type: markdown

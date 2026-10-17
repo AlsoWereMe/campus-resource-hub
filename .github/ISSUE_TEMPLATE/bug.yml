@@ -1,6 +1,7 @@
-name: 缺陷
+# name 至少 3 个字符，否则 GitHub 不显示该表单（原名「缺陷」只有 2 个字符时出现过）。
+name: Bug report
 description: 自测、联调中发现的问题
-title: "[缺陷] "
+title: "[bug] "
 labels: [bug]
 body:
   - type: markdown
