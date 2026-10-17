@@ -2,4 +2,1701 @@ openapi: 3.1.0
 info:
   title: m2 API
   version: v1
-paths: {}
+paths:
+  /api/m2/v1/rooms:
+    get:
+      tags:
+      - M2 · 房间
+      summary: 可申请房间检索（M2-ROOM-01）
+      description: 只返回申请人有资格申请的可整间预约房间（BR-M2-17），并说明不可申请的原因。
+      operationId: search_rooms_api_m2_v1_rooms_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: 页码，从 1 开始
+          default: 1
+          title: Page
+        description: 页码，从 1 开始
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: 每页条数
+          default: 20
+          title: Size
+        description: 每页条数
+      - name: date
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Date
+      - name: startHour
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 23
+            minimum: 0
+          - type: 'null'
+          title: Starthour
+      - name: hours
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 24
+            minimum: 1
+          - type: 'null'
+          title: Hours
+      - name: buildingId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Buildingid
+      - name: roomType
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/RoomType'
+          - type: 'null'
+          title: Roomtype
+      - name: minCapacity
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            minimum: 1
+          - type: 'null'
+          description: 预计人数
+          title: Mincapacity
+        description: 预计人数
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_ApplicableRoom_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/rooms/{room_id}/calendar:
+    get:
+      tags:
+      - M2 · 房间
+      summary: 房间占用日历（M2-ROOM-02，P1）
+      operationId: room_calendar_api_m2_v1_rooms__room_id__calendar_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      - name: dateFrom
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Datefrom
+      - name: dateTo
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Dateto
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CalendarItem'
+                title: Response Room Calendar Api M2 V1 Rooms  Room Id  Calendar Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/rooms/{room_id}/conflicts:
+    get:
+      tags:
+      - M2 · 房间
+      summary: 冲突预检（M2-INT-02）
+      description: 调用 M1 可用性查询。提交前查询失败则不可提交；审批页查询失败只提示。
+      operationId: room_conflicts_api_m2_v1_rooms__room_id__conflicts_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      - name: date
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Date
+      - name: startHour
+        in: query
+        required: true
+        schema:
+          type: integer
+          maximum: 23
+          minimum: 0
+          title: Starthour
+      - name: hours
+        in: query
+        required: true
+        schema:
+          type: integer
+          maximum: 24
+          minimum: 1
+          title: Hours
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictPreview'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/applications/check:
+    post:
+      tags:
+      - M2 · 准入校验
+      summary: 提交前预检准入门槛（M2-ELG-01 ~ 05）
+      operationId: check_eligibility_api_m2_v1_applications_check_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EligibilityResult'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/m2/v1/applications:
+    post:
+      tags:
+      - M2 · 申请
+      summary: 提交整间申请（M2-APP-01）
+      description: 准入校验（M2-T02）→ 冲突校验（BR-M2-04、05）→ 匹配并固化审批链 → 写回 HOLD → 通知第 1 级审批人。同一 Idempotency-Key
+        只产生一条申请。
+      operationId: submit_application_api_m2_v1_applications_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/applications/mine:
+    get:
+      tags:
+      - M2 · 申请
+      summary: 我的申请（M2-QRY-01）
+      operationId: my_applications_api_m2_v1_applications_mine_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: 页码，从 1 开始
+          default: 1
+          title: Page
+        description: 页码，从 1 开始
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: 每页条数
+          default: 20
+          title: Size
+        description: 每页条数
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              $ref: '#/components/schemas/ApplicationStatus'
+          - type: 'null'
+          title: Status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_ApplicationOut_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/applications/{application_id}:
+    get:
+      tags:
+      - M2 · 申请
+      summary: 申请详情：审批时间线、截止时刻、写回状态（M2-APV-04）
+      operationId: get_application_api_m2_v1_applications__application_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: application_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Application Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/applications/{application_id}/withdraw:
+    post:
+      tags:
+      - M2 · 申请
+      summary: 撤回审批中的申请（M2-APP-03）
+      operationId: withdraw_application_api_m2_v1_applications__application_id__withdraw_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: application_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Application Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/applications/{application_id}/cancel:
+    post:
+      tags:
+      - M2 · 申请
+      summary: 取消已通过、未开始的申请（M2-APP-04）
+      description: 释放占用；被 M1 取消的个人预约不恢复。开始后不能取消（BR-M2-13）。
+      operationId: cancel_application_api_m2_v1_applications__application_id__cancel_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: application_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Application Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/admin/applications/{application_id}/writeback/retry:
+    post:
+      tags:
+      - M2 · 申请
+      summary: 手动重试失败的写回（M2-INT-03）
+      operationId: retry_writeback_api_m2_v1_admin_applications__application_id__writeback_retry_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: application_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Application Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/approvals/pending:
+    get:
+      tags:
+      - M2 · 审批
+      summary: 待我审批（M2-APV-01）
+      description: 按截止时刻升序；不含本人提交的申请与本人已审批过的申请（M2-APV-05）。
+      operationId: pending_approvals_api_m2_v1_approvals_pending_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: 页码，从 1 开始
+          default: 1
+          title: Page
+        description: 页码，从 1 开始
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: 每页条数
+          default: 20
+          title: Size
+        description: 每页条数
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_ApplicationOut_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/approvals/done:
+    get:
+      tags:
+      - M2 · 审批
+      summary: 我已审批
+      operationId: done_approvals_api_m2_v1_approvals_done_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: 页码，从 1 开始
+          default: 1
+          title: Page
+        description: 页码，从 1 开始
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: 每页条数
+          default: 20
+          title: Size
+        description: 每页条数
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_ApplicationOut_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/applications/{application_id}/approve:
+    post:
+      tags:
+      - M2 · 审批
+      summary: 通过当前级别（M2-APV-02）
+      description: 有下一级则进入下一级并通知；末级通过则写回 ACTIVE 并通知申请人。
+      operationId: approve_api_m2_v1_applications__application_id__approve_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: application_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Application Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/applications/{application_id}/reject:
+    post:
+      tags:
+      - M2 · 审批
+      summary: 驳回（M2-APV-03）
+      operationId: reject_api_m2_v1_applications__application_id__reject_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: application_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Application Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/applications/{application_id}/transfer:
+    post:
+      tags:
+      - M2 · 审批
+      summary: 转交同级审批人（M2-APV-06，P2）
+      operationId: transfer_api_m2_v1_applications__application_id__transfer_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: application_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Application Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/admin/flows:
+    get:
+      tags:
+      - M2 · 审批链与参数
+      summary: 审批链规则列表（M2-FLOW-01）
+      operationId: list_flows_api_m2_v1_admin_flows_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/FlowRule'
+                type: array
+                title: Response List Flows Api M2 V1 Admin Flows Get
+      security:
+      - HTTPBearer: []
+    post:
+      tags:
+      - M2 · 审批链与参数
+      summary: 新增审批链规则（M2-FLOW-02）
+      description: 只影响此后提交的申请（M2-APP-02）；写入审计。
+      operationId: create_flow_api_m2_v1_admin_flows_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlowRuleIn'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlowRule'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/m2/v1/admin/flows/{flow_id}:
+    put:
+      tags:
+      - M2 · 审批链与参数
+      summary: 修改审批链规则（M2-FLOW-02）
+      operationId: update_flow_api_m2_v1_admin_flows__flow_id__put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: flow_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Flow Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlowRuleIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlowRule'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - M2 · 审批链与参数
+      summary: 删除审批链规则（M2-FLOW-02）
+      operationId: delete_flow_api_m2_v1_admin_flows__flow_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: flow_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Flow Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/admin/settings:
+    get:
+      tags:
+      - M2 · 审批链与参数
+      summary: 查看 M2 参数
+      operationId: list_settings_api_m2_v1_admin_settings_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Setting'
+                type: array
+                title: Response List Settings Api M2 V1 Admin Settings Get
+      security:
+      - HTTPBearer: []
+    put:
+      tags:
+      - M2 · 审批链与参数
+      summary: 修改 M2 参数（BR-M2-19：只作用于新申请）
+      operationId: update_settings_api_m2_v1_admin_settings_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsUpdate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Setting'
+                type: array
+                title: Response Update Settings Api M2 V1 Admin Settings Put
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/m2/v1/admin/applications:
+    get:
+      tags:
+      - M2 · 管理
+      summary: 范围内全部申请（M2-QRY-02）
+      operationId: list_applications_api_m2_v1_admin_applications_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: 页码，从 1 开始
+          default: 1
+          title: Page
+        description: 页码，从 1 开始
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: 每页条数
+          default: 20
+          title: Size
+        description: 每页条数
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              $ref: '#/components/schemas/ApplicationStatus'
+          - type: 'null'
+          title: Status
+      - name: roomId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Roomid
+      - name: applicantId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Applicantid
+      - name: dateFrom
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Datefrom
+      - name: dateTo
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Dateto
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_ApplicationOut_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/admin/applications/{application_id}/revoke:
+    post:
+      tags:
+      - M2 · 管理
+      summary: 撤销已通过的申请（M2-APP-06）
+      description: 理由必填、写入审计；释放占用并通知申请人。
+      operationId: revoke_application_api_m2_v1_admin_applications__application_id__revoke_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: application_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Application Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokeIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m2/v1/admin/stats:
+    get:
+      tags:
+      - M2 · 管理
+      summary: 申请统计（M2-QRY-03，P2）
+      operationId: stats_api_m2_v1_admin_stats_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: dateFrom
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Datefrom
+      - name: dateTo
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Dateto
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomStats'
+                title: Response Stats Api M2 V1 Admin Stats Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    ApplicableRoom:
+      properties:
+        roomId:
+          type: integer
+          title: Roomid
+        code:
+          type: string
+          title: Code
+        name:
+          type: string
+          title: Name
+        buildingName:
+          type: string
+          title: Buildingname
+        roomType:
+          $ref: '#/components/schemas/RoomType'
+        capacity:
+          type: integer
+          title: Capacity
+        facilities:
+          items:
+            type: string
+          type: array
+          title: Facilities
+        openingHours:
+          type: string
+          title: Openinghours
+        applicable:
+          type: boolean
+          title: Applicable
+          description: 所选时段是否可申请
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason
+          description: 不可申请的原因：已有申请 / 维修下架 / 不在开放时间
+      type: object
+      required:
+      - roomId
+      - code
+      - name
+      - buildingName
+      - roomType
+      - capacity
+      - facilities
+      - openingHours
+      - applicable
+      title: ApplicableRoom
+    ApplicantType:
+      type: string
+      enum:
+      - STAFF
+      - STUDENT_LEADER
+      title: ApplicantType
+    ApplicationCreate:
+      properties:
+        roomId:
+          type: integer
+          title: Roomid
+        date:
+          type: string
+          format: date
+          title: Date
+        startHour:
+          type: integer
+          maximum: 23.0
+          minimum: 0.0
+          title: Starthour
+          description: 整点（BR-M2-01）
+        hours:
+          type: integer
+          maximum: 24.0
+          minimum: 1.0
+          title: Hours
+          description: 实际上限取参数 m2.max_duration_hours
+        title:
+          type: string
+          maxLength: 50
+          minLength: 1
+          title: Title
+          description: 活动名称
+        purpose:
+          type: string
+          maxLength: 500
+          minLength: 1
+          title: Purpose
+        attendees:
+          type: integer
+          minimum: 1.0
+          title: Attendees
+          description: 预计人数，不得超过房间容量（BR-M2-06）
+        contactName:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Contactname
+          description: 默认本人
+        contactPhone:
+          anyOf:
+          - type: string
+            maxLength: 32
+          - type: 'null'
+          title: Contactphone
+        remark:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Remark
+      type: object
+      required:
+      - roomId
+      - date
+      - startHour
+      - hours
+      - title
+      - purpose
+      - attendees
+      title: ApplicationCreate
+    ApplicationOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        roomId:
+          type: integer
+          title: Roomid
+        roomCode:
+          type: string
+          title: Roomcode
+        roomName:
+          type: string
+          title: Roomname
+        buildingName:
+          type: string
+          title: Buildingname
+        startsAt:
+          type: string
+          format: date-time
+          title: Startsat
+        endsAt:
+          type: string
+          format: date-time
+          title: Endsat
+        title:
+          type: string
+          title: Title
+        purpose:
+          type: string
+          title: Purpose
+        attendees:
+          type: integer
+          title: Attendees
+        contactName:
+          type: string
+          title: Contactname
+        contactPhone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Contactphone
+        remark:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remark
+        applicantId:
+          type: integer
+          title: Applicantid
+        applicantName:
+          type: string
+          title: Applicantname
+        status:
+          $ref: '#/components/schemas/ApplicationStatus'
+        currentLevel:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Currentlevel
+          description: 审批中时的当前级别
+        deadline:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deadline
+          description: 当前级别的审批截止时刻（BR-M2-11）
+        chain:
+          items:
+            $ref: '#/components/schemas/ApprovalLevel'
+          type: array
+          title: Chain
+          description: 提交时固化的审批链快照（M2-APP-02）
+        records:
+          items:
+            $ref: '#/components/schemas/ApprovalRecord'
+          type: array
+          title: Records
+        writeback:
+          type: string
+          enum:
+          - NONE
+          - SYNCING
+          - SYNCED
+          - FAILED
+          title: Writeback
+          description: 在 M1 中的占用同步状态（M2-INT-03）
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+      type: object
+      required:
+      - id
+      - roomId
+      - roomCode
+      - roomName
+      - buildingName
+      - startsAt
+      - endsAt
+      - title
+      - purpose
+      - attendees
+      - contactName
+      - contactPhone
+      - remark
+      - applicantId
+      - applicantName
+      - status
+      - currentLevel
+      - deadline
+      - chain
+      - records
+      - writeback
+      - createdAt
+      title: ApplicationOut
+    ApplicationStatus:
+      type: string
+      enum:
+      - PENDING
+      - APPROVED
+      - REJECTED
+      - WITHDRAWN
+      - EXPIRED
+      - CANCELLED
+      - REVOKED
+      - COMPLETED
+      title: ApplicationStatus
+    ApprovalLevel:
+      properties:
+        level:
+          type: integer
+          minimum: 1.0
+          title: Level
+        role:
+          type: string
+          title: Role
+          description: 审批角色，如 dept_approver、room_admin、resource_admin
+        scopeFrom:
+          $ref: '#/components/schemas/ScopeFrom'
+      type: object
+      required:
+      - level
+      - role
+      - scopeFrom
+      title: ApprovalLevel
+    ApprovalRecord:
+      properties:
+        level:
+          type: integer
+          title: Level
+        approverId:
+          type: integer
+          title: Approverid
+        approverName:
+          type: string
+          title: Approvername
+        action:
+          type: string
+          enum:
+          - APPROVE
+          - REJECT
+          - TRANSFER
+          title: Action
+        comment:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Comment
+        at:
+          type: string
+          format: date-time
+          title: At
+      type: object
+      required:
+      - level
+      - approverId
+      - approverName
+      - action
+      - comment
+      - at
+      title: ApprovalRecord
+    ApproveIn:
+      properties:
+        comment:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Comment
+      type: object
+      title: ApproveIn
+    BlockBrief:
+      properties:
+        source:
+          $ref: '#/components/schemas/BlockSource'
+        sourceRef:
+          type: string
+          title: Sourceref
+        kind:
+          $ref: '#/components/schemas/BlockKind'
+        scope:
+          $ref: '#/components/schemas/BlockScope'
+        startsAt:
+          type: string
+          format: date-time
+          title: Startsat
+        endsAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Endsat
+      type: object
+      required:
+      - source
+      - sourceRef
+      - kind
+      - scope
+      - startsAt
+      - endsAt
+      title: BlockBrief
+    BlockKind:
+      type: string
+      enum:
+      - HOLD
+      - ACTIVE
+      title: BlockKind
+    BlockScope:
+      type: string
+      enum:
+      - ROOM
+      - SEATS
+      title: BlockScope
+    BlockSource:
+      type: string
+      enum:
+      - M1_BOOKING
+      - M2_ROOM_BOOKING
+      - M3_REPAIR
+      - ADMIN
+      title: BlockSource
+    CalendarItem:
+      properties:
+        startsAt:
+          type: string
+          format: date-time
+          title: Startsat
+        endsAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Endsat
+        kind:
+          type: string
+          enum:
+          - APPLICATION
+          - REPAIR
+          - PERSONAL_BOOKINGS
+          title: Kind
+        status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+          description: 整间申请的状态；不显示申请人
+        count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Count
+          description: 个人预约数量
+      type: object
+      required:
+      - startsAt
+      - endsAt
+      - kind
+      title: CalendarItem
+    ConflictPreview:
+      properties:
+        personalBookingCount:
+          type: integer
+          title: Personalbookingcount
+          description: 审批通过后将被取消的个人预约数
+        blocks:
+          items:
+            $ref: '#/components/schemas/BlockBrief'
+          type: array
+          title: Blocks
+        canSubmit:
+          type: boolean
+          title: Cansubmit
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason
+      type: object
+      required:
+      - personalBookingCount
+      - blocks
+      - canSubmit
+      title: ConflictPreview
+    EligibilityResult:
+      properties:
+        eligible:
+          type: boolean
+          title: Eligible
+        violations:
+          items:
+            $ref: '#/components/schemas/Violation'
+          type: array
+          title: Violations
+      type: object
+      required:
+      - eligible
+      - violations
+      title: EligibilityResult
+    FlowCondition:
+      properties:
+        applicantTypes:
+          items:
+            $ref: '#/components/schemas/ApplicantType'
+          type: array
+          title: Applicanttypes
+          description: 空表示不限
+        minAttendees:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Minattendees
+          description: 预计人数大于该值时命中
+        minHours:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Minhours
+          description: 时长大于该值时命中
+        roomTypes:
+          items:
+            $ref: '#/components/schemas/RoomType'
+          type: array
+          title: Roomtypes
+        roomOwner:
+          anyOf:
+          - $ref: '#/components/schemas/OwnerType'
+          - type: 'null'
+      type: object
+      title: FlowCondition
+    FlowRule:
+      properties:
+        name:
+          type: string
+          maxLength: 50
+          title: Name
+        priority:
+          type: integer
+          minimum: 1.0
+          title: Priority
+          description: 数字越小越优先，取第一条命中的规则（BR-M2-09）
+        condition:
+          $ref: '#/components/schemas/FlowCondition'
+        levels:
+          items:
+            $ref: '#/components/schemas/ApprovalLevel'
+          type: array
+          minItems: 1
+          title: Levels
+        enabled:
+          type: boolean
+          title: Enabled
+          default: true
+        id:
+          type: integer
+          title: Id
+      type: object
+      required:
+      - name
+      - priority
+      - condition
+      - levels
+      - id
+      title: FlowRule
+    FlowRuleIn:
+      properties:
+        name:
+          type: string
+          maxLength: 50
+          title: Name
+        priority:
+          type: integer
+          minimum: 1.0
+          title: Priority
+          description: 数字越小越优先，取第一条命中的规则（BR-M2-09）
+        condition:
+          $ref: '#/components/schemas/FlowCondition'
+        levels:
+          items:
+            $ref: '#/components/schemas/ApprovalLevel'
+          type: array
+          minItems: 1
+          title: Levels
+        enabled:
+          type: boolean
+          title: Enabled
+          default: true
+      type: object
+      required:
+      - name
+      - priority
+      - condition
+      - levels
+      title: FlowRuleIn
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    OwnerType:
+      type: string
+      enum:
+      - SCHOOL
+      - DEPARTMENT
+      title: OwnerType
+    Page_ApplicableRoom_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/ApplicableRoom'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        size:
+          type: integer
+          title: Size
+      type: object
+      required:
+      - items
+      - total
+      - page
+      - size
+      title: Page[ApplicableRoom]
+    Page_ApplicationOut_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/ApplicationOut'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        size:
+          type: integer
+          title: Size
+      type: object
+      required:
+      - items
+      - total
+      - page
+      - size
+      title: Page[ApplicationOut]
+    RejectIn:
+      properties:
+        reason:
+          type: string
+          maxLength: 200
+          minLength: 1
+          title: Reason
+          description: 驳回理由必填（BR-M2-10）
+      type: object
+      required:
+      - reason
+      title: RejectIn
+    RevokeIn:
+      properties:
+        reason:
+          type: string
+          maxLength: 200
+          minLength: 1
+          title: Reason
+      type: object
+      required:
+      - reason
+      title: RevokeIn
+    RoomStats:
+      properties:
+        roomId:
+          type: integer
+          title: Roomid
+        roomName:
+          type: string
+          title: Roomname
+        month:
+          type: string
+          title: Month
+        submitted:
+          type: integer
+          title: Submitted
+        approvalRate:
+          type: number
+          title: Approvalrate
+        avgApprovalHours:
+          type: number
+          title: Avgapprovalhours
+        expiredRate:
+          type: number
+          title: Expiredrate
+      type: object
+      required:
+      - roomId
+      - roomName
+      - month
+      - submitted
+      - approvalRate
+      - avgApprovalHours
+      - expiredRate
+      title: RoomStats
+    RoomType:
+      type: string
+      enum:
+      - CLASSROOM
+      - LIBRARY_STUDY
+      - OTHER_STUDY
+      - MEETING
+      - PUBLIC_AREA
+      title: RoomType
+    ScopeFrom:
+      type: string
+      enum:
+      - APPLICANT_DEPARTMENT
+      - ROOM_SCOPE
+      - ALL
+      title: ScopeFrom
+      description: 审批人数据范围的取法。
+    Setting:
+      properties:
+        key:
+          type: string
+          title: Key
+          description: 如 m2.level_timeout_hours
+        value:
+          type: integer
+          title: Value
+        default:
+          type: integer
+          title: Default
+        min:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Min
+        max:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Max
+        description:
+          type: string
+          title: Description
+      type: object
+      required:
+      - key
+      - value
+      - default
+      - description
+      title: Setting
+    SettingsUpdate:
+      properties:
+        values:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Values
+      type: object
+      required:
+      - values
+      title: SettingsUpdate
+    TransferIn:
+      properties:
+        toUserId:
+          type: integer
+          title: Touserid
+      type: object
+      required:
+      - toUserId
+      title: TransferIn
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    Violation:
+      properties:
+        rule:
+          type: string
+          title: Rule
+          description: 规则编号，如 BR-M2-03
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+      - rule
+      - message
+      title: Violation
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      description: IAM 签发的访问令牌
+      scheme: bearer
