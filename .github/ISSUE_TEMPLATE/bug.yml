@@ -1,7 +1,7 @@
-# name 须含英文：GitHub 按 name 中的英文字母与数字判重，纯中文名称会被判为重名，其中一个表单不显示。
-name: 缺陷（bug）
+# name 至少 3 个字符，否则 GitHub 不显示该表单（原名「缺陷」只有 2 个字符时出现过）。
+name: Bug report
 description: 自测、联调中发现的问题
-title: "[缺陷] "
+title: "[bug] "
 labels: [bug]
 body:
   - type: markdown
