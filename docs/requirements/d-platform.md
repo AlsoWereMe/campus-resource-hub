@@ -301,12 +301,12 @@ M2、M3 等服务调用其他模块的内部接口时须携带服务凭证；内
 
 | 需求 | 优先级 | 归属 | 计划验证 | 实现 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| IAM-AUTH-01 | P0 | D-IAM | 集成、E2E | | 未开始 |
+| IAM-AUTH-01 | P0 | D-IAM | 集成、E2E | #3 `platform_service/iam/auth_api.py` | 已完成 |
 | IAM-AUTH-02 | P0 | D-IAM | 集成 | | 未开始 |
-| IAM-AUTH-03 | P0 | D-IAM | 集成、契约 | | 未开始 |
+| IAM-AUTH-03 | P0 | D-IAM | 集成、契约 | #3 `platform_service/iam/internal_api.py` | 已完成 |
 | IAM-USER-01 | P0 | D-IAM | 集成 | | 未开始 |
 | IAM-USER-02 | P0 | D-IAM | 集成、契约 | | 未开始 |
-| IAM-ROLE-01 | P0 | D-IAM | 单元、集成 | | 未开始 |
+| IAM-ROLE-01 | P0 | D-IAM | 单元、集成 | #3 权限点注册与漏声明检测；查询接口待 D-T03 | 进行中 |
 | IAM-ROLE-02 | P0 | D-IAM | 集成、E2E | | 未开始 |
 | IAM-ROLE-03 | P0 | D-IAM | 集成 | | 未开始 |
 | IAM-ROLE-04 | P0 | D-IAM | 集成 | | 未开始 |
@@ -316,7 +316,7 @@ M2、M3 等服务调用其他模块的内部接口时须携带服务凭证；内
 | SPC-ROOM-04 | P0 | D-SPC | 集成 | | 未开始 |
 | SPC-ROOM-05 | P0 | D-SPC | 集成 | | 未开始 |
 | SPC-ROOM-06 | P2 | D-SPC | 集成 | | 未开始 |
-| SPC-LOC-01 | P0 | D-SPC | 集成、契约 | | 未开始 |
+| SPC-LOC-01 | P0 | D-SPC | 集成、契约 | #3 `platform_service/space/read_api.py` | 已完成 |
 | SPC-SEAT-01 | P0 | D-SPC | 集成 | | 未开始 |
 | SPC-SEAT-02 | P0 | D-SPC | 集成 | | 未开始 |
 | SPC-SEAT-03 | P2 | D-SPC | E2E | | 未开始 |
