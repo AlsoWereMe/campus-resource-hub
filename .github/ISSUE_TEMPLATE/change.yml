@@ -1,4 +1,5 @@
-name: 变更请求
+# name 须含英文：GitHub 按 name 中的英文字母与数字判重，纯中文名称会被判为重名，其中一个表单不显示。
+name: 变更请求（change）
 description: 要改契约、改别的模块或公共层、改需求或业务规则，或者需求有歧义需要澄清
 title: "[变更] "
 labels: [change]
