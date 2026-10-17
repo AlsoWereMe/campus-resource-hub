@@ -10,7 +10,7 @@ S_UPPER = $(shell echo $(s) | tr a-z A-Z)
 HOST_DB_URL = postgresql+psycopg://$(s)_svc:$($(S_UPPER)_DB_PASSWORD)@127.0.0.1:$(POSTGRES_PORT)/$(POSTGRES_DB)
 
 .PHONY: help setup up down reset ps logs restart seed revision lint fmt typecheck test verify-db \
-	contracts contracts-check check web
+	contracts contracts-check check web web-check
 
 help: ## 列出可用命令
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -64,8 +64,9 @@ typecheck: ## 类型检查（mypy strict）
 test: ## 运行测试（需要 Docker）；只测一个服务：make test s=seat
 	uv run pytest $(if $(s),services/$(s),)
 
-contracts: ## 从代码导出接口与消息契约到 contracts/
+contracts: ## 从代码导出接口与消息契约到 contracts/，并重新生成前端类型
 	uv run python scripts/export_contracts.py
+	@if [ -d apps/web/node_modules ]; then cd apps/web && pnpm gen:api; fi
 
 contracts-check: ## 检查 contracts/ 与代码一致（提交前必跑）
 	uv run python scripts/export_contracts.py --check
@@ -73,7 +74,11 @@ contracts-check: ## 检查 contracts/ 与代码一致（提交前必跑）
 verify-db: .env ## 验证数据库按 schema 隔离（需先 make up）
 	./scripts/verify-db-isolation.sh
 
-check: lint typecheck contracts-check test ## 提交前检查：lint + typecheck + 契约一致 + test
+check: lint typecheck contracts-check test web-check ## 提交前检查：后端 lint、类型、契约、测试 + 前端检查
+
+web-check: ## 前端类型检查与单元测试
+	@if [ -d apps/web/node_modules ]; then cd apps/web && pnpm typecheck && pnpm test; \
+	else echo "未安装前端依赖，跳过（先运行 make setup）"; fi
 
 web: ## 启动前端开发服务器，然后访问 http://127.0.0.1:8080
 	cd apps/web && pnpm dev

@@ -17,6 +17,8 @@ apps/web/src/
 
 ## 规则
 
+- 本工程使用 Next.js 16，部分 API 与约定和旧版本不同；写前端代码前先读 `apps/web/node_modules/next/dist/docs/` 中的相关指南。
+
 - 模块页面只通过本模块的 API Client 调用本模块后端；需要其他模块时用页面跳转，不在前端拼装其他模块的业务逻辑。
 - 不使用 Route Handlers、Server Actions 实现业务逻辑；详情页等用查询参数传 ID（静态导出不支持运行时动态路由段）。
 - API Client 由 `contracts/` 中的 OpenAPI 生成，不手写请求类型。
