@@ -2,4 +2,3012 @@ openapi: 3.1.0
 info:
   title: m1 API
   version: v1
-paths: {}
+paths:
+  /api/m1/v1/rooms:
+    get:
+      tags:
+      - M1 · 检索
+      summary: 浏览可用自习室（M1-RSV-01）
+      description: 只返回学生可见（院系专属仅本院系，BR-10）、已开放的自习室。
+      operationId: browse_rooms_api_m1_v1_rooms_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: date
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          description: 默认今天（业务时区）
+          title: Date
+        description: 默认今天（业务时区）
+      - name: startHour
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 23
+            minimum: 0
+          - type: 'null'
+          description: 默认最近可约整点
+          title: Starthour
+        description: 默认最近可约整点
+      - name: hours
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 12
+          minimum: 1
+          default: 1
+          title: Hours
+      - name: campusId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Campusid
+      - name: buildingId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Buildingid
+      - name: roomType
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/RoomType'
+          - type: 'null'
+          title: Roomtype
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomBrowseItem'
+                title: Response Browse Rooms Api M1 V1 Rooms Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/seats/search:
+    get:
+      tags:
+      - M1 · 检索
+      summary: 条件搜索座位（M1-SRH-01）
+      description: 结果按自习室分组；标记多选须全部满足；P95 < 1 秒（NFR-14）。
+      operationId: search_seats_api_m1_v1_seats_search_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: 页码，从 1 开始
+          default: 1
+          title: Page
+        description: 页码，从 1 开始
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: 每页条数
+          default: 20
+          title: Size
+        description: 每页条数
+      - name: date
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          description: 默认今天（业务时区）
+          title: Date
+        description: 默认今天（业务时区）
+      - name: startHour
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 23
+            minimum: 0
+          - type: 'null'
+          description: 默认最近可约整点
+          title: Starthour
+        description: 默认最近可约整点
+      - name: hours
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 12
+          minimum: 1
+          default: 1
+          title: Hours
+      - name: campusId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Campusid
+      - name: buildingId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Buildingid
+      - name: roomId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Roomid
+      - name: roomType
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/RoomType'
+          - type: 'null'
+          title: Roomtype
+      - name: tags
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: 'null'
+          description: 多选须全部满足
+          title: Tags
+        description: 多选须全部满足
+      - name: anyOutlet
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: 快捷条件：有插座（任一类型）
+          default: false
+          title: Anyoutlet
+        description: 快捷条件：有插座（任一类型）
+      - name: onlyAvailable
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+          title: Onlyavailable
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          description: 自习室名称或座位编号
+          title: Keyword
+        description: 自习室名称或座位编号
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_RoomSeats_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/seats/{seat_id}/timeline:
+    get:
+      tags:
+      - M1 · 检索
+      summary: 座位当日各整点时段状态（M1-SRH-02）
+      description: 不显示他人身份，只给状态类别。
+      operationId: seat_timeline_api_m1_v1_seats__seat_id__timeline_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: seat_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Seat Id
+      - name: date
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Date
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatTimeline'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/bookings/history:
+    get:
+      tags:
+      - M1 · 历史
+      summary: 历史预约（M1-HIS-01）
+      description: 按时间倒序分页；已注销座位仍显示当时的编号与自习室名称。
+      operationId: booking_history_api_m1_v1_bookings_history_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: 页码，从 1 开始
+          default: 1
+          title: Page
+        description: 页码，从 1 开始
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: 每页条数
+          default: 20
+          title: Size
+        description: 每页条数
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              $ref: '#/components/schemas/BookingStatus'
+          - type: 'null'
+          title: Status
+      - name: dateFrom
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Datefrom
+      - name: dateTo
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Dateto
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_BookingOut_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/bookings/{booking_id}/rebook:
+    get:
+      tags:
+      - M1 · 历史
+      summary: 再次预约该座位前的检查（M1-HIS-02）
+      description: 前端据此预填座位；座位不可用时给出原因并引导回搜索。
+      operationId: rebook_hint_api_m1_v1_bookings__booking_id__rebook_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: booking_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Booking Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RebookHint'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/bookings:
+    post:
+      tags:
+      - M1 · 预约
+      summary: 创建预约（M1-RSV-02）
+      description: 按 BR-01 ~ BR-10 与暂停状态校验；规则不满足返回 RULE_VIOLATION 并给出规则编号；同一 Idempotency-Key 只产生一条预约；并发抢同一座位只有一人成功。
+      operationId: create_booking_api_m1_v1_bookings_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/bookings/current:
+    get:
+      tags:
+      - M1 · 预约
+      summary: 我的当前与即将开始的预约（M1-RSV-04）
+      operationId: current_bookings_api_m1_v1_bookings_current_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/BookingOut'
+                type: array
+                title: Response Current Bookings Api M1 V1 Bookings Current Get
+      security:
+      - HTTPBearer: []
+  /api/m1/v1/bookings/{booking_id}:
+    get:
+      tags:
+      - M1 · 预约
+      summary: 预约详情（本人）
+      operationId: get_booking_api_m1_v1_bookings__booking_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: booking_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Booking Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/bookings/{booking_id}/cancel:
+    post:
+      tags:
+      - M1 · 预约
+      summary: 取消预约（M1-RSV-03）
+      description: 签到截止前可取消「待签到」预约，不计违约，座位立即释放（BR-11）。
+      operationId: cancel_booking_api_m1_v1_bookings__booking_id__cancel_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: booking_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Booking Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/checkin/candidate:
+    get:
+      tags:
+      - M1 · 签到
+      summary: 扫码后找到本人在该室处于签到窗口内的预约（M1-CHK-04）
+      description: 没有时返回 null，前端提示原因并给出「去预约」入口。
+      operationId: checkin_candidate_api_m1_v1_checkin_candidate_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: roomId
+        in: query
+        required: true
+        schema:
+          type: integer
+          title: Roomid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/BookingOut'
+                - type: 'null'
+                title: Response Checkin Candidate Api M1 V1 Checkin Candidate Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/bookings/{booking_id}/checkin:
+    post:
+      tags:
+      - M1 · 签到
+      summary: 签到（M1-CHK-03、04）
+      description: 校验：本人、待签到、在窗口内（BR-13）、码属于该室且有效（BR-16）、10 分钟内输错不超过 5 次（BR-17）。
+      operationId: checkin_api_m1_v1_bookings__booking_id__checkin_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: booking_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Booking Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckinIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/screen/code:
+    get:
+      tags:
+      - M1 · 签到码与屏幕端
+      summary: 屏幕端获取当前签到码（M1-CHK-02）
+      description: 用请求头 X-Device-Token 鉴权；设备令牌只能取绑定自习室的码，吊销后被拒绝。
+      operationId: screen_code_api_m1_v1_screen_code_get
+      parameters:
+      - name: X-Device-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          title: X-Device-Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScreenCode'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/admin/screens:
+    get:
+      tags:
+      - M1 · 签到码与屏幕端
+      summary: 屏幕终端列表
+      operationId: list_screens_api_m1_v1_admin_screens_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: roomId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Roomid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScreenDevice'
+                title: Response List Screens Api M1 V1 Admin Screens Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - M1 · 签到码与屏幕端
+      summary: 为自习室生成屏幕设备令牌
+      operationId: create_screen_api_m1_v1_admin_screens_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScreenDeviceCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScreenDeviceCreated'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/admin/screens/{device_id}/revoke:
+    post:
+      tags:
+      - M1 · 签到码与屏幕端
+      summary: 吊销屏幕设备令牌
+      operationId: revoke_screen_api_m1_v1_admin_screens__device_id__revoke_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Device Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScreenDevice'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/violations/mine:
+    get:
+      tags:
+      - M1 · 违约
+      summary: 我的违约与处罚状态（M1-VIO-02）
+      operationId: my_violations_api_m1_v1_violations_mine_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyViolations'
+      security:
+      - HTTPBearer: []
+  /api/m1/v1/admin/violations:
+    get:
+      tags:
+      - M1 · 违约
+      summary: 范围内违约查询（M1-VIO-02）
+      operationId: list_violations_api_m1_v1_admin_violations_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: 页码，从 1 开始
+          default: 1
+          title: Page
+        description: 页码，从 1 开始
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: 每页条数
+          default: 20
+          title: Size
+        description: 每页条数
+      - name: userId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Userid
+      - name: roomId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Roomid
+      - name: dateFrom
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Datefrom
+      - name: dateTo
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Dateto
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_ViolationOut_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/admin/violations/{violation_id}/revoke:
+    post:
+      tags:
+      - M1 · 违约
+      summary: 撤销违约（M1-VIO-04）
+      description: 原因必填、写入审计；撤销后重新计算处罚状态。
+      operationId: revoke_violation_api_m1_v1_admin_violations__violation_id__revoke_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: violation_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Violation Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokeIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViolationOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/bookings/{booking_id}/checkout:
+    post:
+      tags:
+      - M1 · 拓展（P2）
+      summary: 提前签退（M1-RSV-06）
+      description: 自下一个整点起释放剩余时段，状态为已完成（提前签退）。
+      operationId: checkout_api_m1_v1_bookings__booking_id__checkout_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: booking_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Booking Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/rooms/{room_id}/seat-map:
+    get:
+      tags:
+      - M1 · 拓展（P2）
+      summary: 座位图（M1-SRH-03）
+      operationId: seat_map_api_m1_v1_rooms__room_id__seat_map_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      - name: date
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          description: 默认今天（业务时区）
+          title: Date
+        description: 默认今天（业务时区）
+      - name: startHour
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 23
+            minimum: 0
+          - type: 'null'
+          description: 默认最近可约整点
+          title: Starthour
+        description: 默认最近可约整点
+      - name: hours
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 12
+          minimum: 1
+          default: 1
+          title: Hours
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatMap'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/seats/{seat_id}/alternatives:
+    get:
+      tags:
+      - M1 · 拓展（P2）
+      summary: 替代推荐：同室同标记的可约座位（M1-SRH-04）
+      operationId: alternatives_api_m1_v1_seats__seat_id__alternatives_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: seat_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Seat Id
+      - name: date
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          description: 默认今天（业务时区）
+          title: Date
+        description: 默认今天（业务时区）
+      - name: startHour
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 23
+            minimum: 0
+          - type: 'null'
+          description: 默认最近可约整点
+          title: Starthour
+        description: 默认最近可约整点
+      - name: hours
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 12
+          minimum: 1
+          default: 1
+          title: Hours
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SeatResult'
+                title: Response Alternatives Api M1 V1 Seats  Seat Id  Alternatives Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/favorites:
+    get:
+      tags:
+      - M1 · 拓展（P2）
+      summary: 我的常用座位（M1-HIS-03）
+      operationId: favorites_api_m1_v1_favorites_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/FavoriteSeat'
+                type: array
+                title: Response Favorites Api M1 V1 Favorites Get
+      security:
+      - HTTPBearer: []
+  /api/m1/v1/favorites/{seat_id}:
+    put:
+      tags:
+      - M1 · 拓展（P2）
+      summary: 收藏座位（M1-HIS-03）
+      operationId: add_favorite_api_m1_v1_favorites__seat_id__put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: seat_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Seat Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - M1 · 拓展（P2）
+      summary: 取消收藏（M1-HIS-03）
+      operationId: remove_favorite_api_m1_v1_favorites__seat_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: seat_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Seat Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/admin/settings:
+    get:
+      tags:
+      - M1 · 业务参数
+      summary: 查看 M1 业务参数
+      operationId: list_settings_api_m1_v1_admin_settings_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Setting'
+                type: array
+                title: Response List Settings Api M1 V1 Admin Settings Get
+      security:
+      - HTTPBearer: []
+    put:
+      tags:
+      - M1 · 业务参数
+      summary: 修改 M1 业务参数（M1-CFG-01）
+      description: 校验取值范围；写入审计；只作用于此后新建的预约（BR-21）。
+      operationId: update_settings_api_m1_v1_admin_settings_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsUpdate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Setting'
+                type: array
+                title: Response Update Settings Api M1 V1 Admin Settings Put
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/m1/v1/admin/bookings/{booking_id}/cancel:
+    post:
+      tags:
+      - M1 · 管理员处置
+      summary: 管理员取消预约（M1-RSV-07）
+      description: 限数据范围内；通知学生、不计违约、写入审计。
+      operationId: admin_cancel_api_m1_v1_admin_bookings__booking_id__cancel_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: booking_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Booking Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/admin/bookings/{booking_id}/checkin:
+    post:
+      tags:
+      - M1 · 管理员处置
+      summary: 管理员补签（M1-CHK-05，P2）
+      operationId: admin_checkin_api_m1_v1_admin_bookings__booking_id__checkin_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: booking_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Booking Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/admin/dashboard:
+    get:
+      tags:
+      - M1 · 运营
+      summary: 实时看板（M1-OPS-01）
+      description: 数据延迟 ≤ 1 分钟。
+      operationId: dashboard_api_m1_v1_admin_dashboard_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: buildingId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Buildingid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/admin/bookings:
+    get:
+      tags:
+      - M1 · 运营
+      summary: 预约明细（M1-OPS-02）
+      operationId: admin_bookings_api_m1_v1_admin_bookings_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: 页码，从 1 开始
+          default: 1
+          title: Page
+        description: 页码，从 1 开始
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: 每页条数
+          default: 20
+          title: Size
+        description: 每页条数
+      - name: dateFrom
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Datefrom
+      - name: dateTo
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Dateto
+      - name: buildingId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Buildingid
+      - name: roomId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Roomid
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              $ref: '#/components/schemas/BookingStatus'
+          - type: 'null'
+          title: Status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_AdminBooking_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/admin/stats:
+    get:
+      tags:
+      - M1 · 运营
+      summary: 统计指标（M1-OPS-03）
+      operationId: stats_api_m1_v1_admin_stats_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: dateFrom
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Datefrom
+      - name: dateTo
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Dateto
+      - name: buildingId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Buildingid
+      - name: roomId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Roomid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stats'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/admin/stats/flags:
+    get:
+      tags:
+      - M1 · 运营
+      summary: 低利用率与紧张自习室（M1-OPS-04）
+      operationId: stats_flags_api_m1_v1_admin_stats_flags_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: dateFrom
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Datefrom
+      - name: dateTo
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Dateto
+      - name: buildingId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Buildingid
+      - name: roomId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Roomid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomFlag'
+                title: Response Stats Flags Api M1 V1 Admin Stats Flags Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/admin/export/bookings.csv:
+    get:
+      tags:
+      - M1 · 运营
+      summary: 导出预约明细 CSV（M1-OPS-05）
+      operationId: export_bookings_api_m1_v1_admin_export_bookings_csv_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: 页码，从 1 开始
+          default: 1
+          title: Page
+        description: 页码，从 1 开始
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: 每页条数
+          default: 20
+          title: Size
+        description: 每页条数
+      - name: dateFrom
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Datefrom
+      - name: dateTo
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Dateto
+      - name: buildingId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Buildingid
+      - name: roomId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Roomid
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              $ref: '#/components/schemas/BookingStatus'
+          - type: 'null'
+          title: Status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/csv: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/admin/export/stats.csv:
+    get:
+      tags:
+      - M1 · 运营
+      summary: 导出统计 CSV（M1-OPS-05）
+      operationId: export_stats_api_m1_v1_admin_export_stats_csv_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: dateFrom
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Datefrom
+      - name: dateTo
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Dateto
+      - name: buildingId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Buildingid
+      - name: roomId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Roomid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/csv: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/admin/trace:
+    get:
+      tags:
+      - M1 · 状态追溯
+      summary: 座位在某时刻的状态与来源（M1-INT-06）
+      operationId: seat_trace_api_m1_v1_admin_trace_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: seatId
+        in: query
+        required: true
+        schema:
+          type: integer
+          title: Seatid
+      - name: at
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+          title: At
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatTrace'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/m1/v1/admin/trace/history:
+    get:
+      tags:
+      - M1 · 状态追溯
+      summary: 座位状态变更历史（M1-INT-06）
+      operationId: seat_trace_history_api_m1_v1_admin_trace_history_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: seatId
+        in: query
+        required: true
+        schema:
+          type: integer
+          title: Seatid
+      - name: from
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: From
+      - name: to
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: To
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SeatStateLog'
+                title: Response Seat Trace History Api M1 V1 Admin Trace History Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /internal/m1/v1/blocks/{source}/{source_ref}:
+    put:
+      tags:
+      - M1 · 内部接口
+      summary: 写入或更新占用块（M1-INT-01、03）
+      description: 以「写入来源 + 来源单号」幂等。ACTIVE 取消冲突的个人预约并通知（不计违约，BR-19），HOLD 只阻止新预约。仅 M3_REPAIR、ADMIN 可不填结束时间。
+      operationId: upsert_block_internal_m1_v1_blocks__source___source_ref__put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: source
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/BlockSource'
+      - name: source_ref
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Source Ref
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockUpsert'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlockResult'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - M1 · 内部接口
+      summary: 释放占用块（M1-INT-02）
+      description: 幂等：释放不存在或已释放的块也返回 204。被取消的个人预约不自动恢复。
+      operationId: release_block_internal_m1_v1_blocks__source___source_ref__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: source
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/BlockSource'
+      - name: source_ref
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Source Ref
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /internal/m1/v1/rooms/{room_id}/availability:
+    get:
+      tags:
+      - M1 · 内部接口
+      summary: 自习室在区间内的占用与冲突预约数（M1-INT-04）
+      description: 供 M2 提交、审批前展示冲突；不含学生身份。
+      operationId: room_availability_internal_m1_v1_rooms__room_id__availability_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      - name: startsAt
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+          title: Startsat
+      - name: endsAt
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+          title: Endsat
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomAvailability'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /internal/m1/v1/users/{user_id}/violation-summary:
+    get:
+      tags:
+      - M1 · 内部接口
+      summary: 学生近期违约摘要（M1-INT-07，供 M2 准入门槛）
+      operationId: violation_summary_internal_m1_v1_users__user_id__violation_summary_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: User Id
+      - name: days
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 30
+          title: Days
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViolationSummary'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    AdminBooking:
+      properties:
+        id:
+          type: integer
+          title: Id
+        seatId:
+          type: integer
+          title: Seatid
+        seatCode:
+          type: string
+          title: Seatcode
+        roomId:
+          type: integer
+          title: Roomid
+        roomName:
+          type: string
+          title: Roomname
+        buildingName:
+          type: string
+          title: Buildingname
+        startsAt:
+          type: string
+          format: date-time
+          title: Startsat
+        endsAt:
+          type: string
+          format: date-time
+          title: Endsat
+        status:
+          $ref: '#/components/schemas/BookingStatus'
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+        checkinOpensAt:
+          type: string
+          format: date-time
+          title: Checkinopensat
+          description: 签到窗口开启时刻（BR-13）
+        checkinDeadline:
+          type: string
+          format: date-time
+          title: Checkindeadline
+          description: 签到截止时刻 T0 + 15 分钟（BR-12、13）
+        checkedInAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Checkedinat
+        checkinMethod:
+          anyOf:
+          - $ref: '#/components/schemas/CheckinMethod'
+          - type: 'null'
+        cancelledAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Cancelledat
+        cancelReason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cancelreason
+        cancelSource:
+          anyOf:
+          - $ref: '#/components/schemas/BlockSource'
+          - type: 'null'
+          description: 系统取消时的写入来源
+        cancelSourceRef:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cancelsourceref
+        userId:
+          type: integer
+          title: Userid
+        studentNoMasked:
+          type: string
+          title: Studentnomasked
+          description: 运营管理员默认看到脱敏学号（NFR-11）
+        studentName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Studentname
+          description: 无查看完整信息的权限时为空
+      type: object
+      required:
+      - id
+      - seatId
+      - seatCode
+      - roomId
+      - roomName
+      - buildingName
+      - startsAt
+      - endsAt
+      - status
+      - createdAt
+      - checkinOpensAt
+      - checkinDeadline
+      - userId
+      - studentNoMasked
+      title: AdminBooking
+    BlockBrief:
+      properties:
+        source:
+          $ref: '#/components/schemas/BlockSource'
+        sourceRef:
+          type: string
+          title: Sourceref
+        kind:
+          $ref: '#/components/schemas/BlockKind'
+        scope:
+          $ref: '#/components/schemas/BlockScope'
+        startsAt:
+          type: string
+          format: date-time
+          title: Startsat
+        endsAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Endsat
+      type: object
+      required:
+      - source
+      - sourceRef
+      - kind
+      - scope
+      - startsAt
+      - endsAt
+      title: BlockBrief
+    BlockKind:
+      type: string
+      enum:
+      - HOLD
+      - ACTIVE
+      title: BlockKind
+    BlockResult:
+      properties:
+        blockId:
+          type: integer
+          title: Blockid
+        source:
+          $ref: '#/components/schemas/BlockSource'
+        sourceRef:
+          type: string
+          title: Sourceref
+        kind:
+          $ref: '#/components/schemas/BlockKind'
+        cancelledBookingIds:
+          items:
+            type: integer
+          type: array
+          title: Cancelledbookingids
+          description: 因本次写入被系统取消的个人预约（不含学生身份）
+      type: object
+      required:
+      - blockId
+      - source
+      - sourceRef
+      - kind
+      title: BlockResult
+    BlockScope:
+      type: string
+      enum:
+      - ROOM
+      - SEATS
+      title: BlockScope
+    BlockSource:
+      type: string
+      enum:
+      - M1_BOOKING
+      - M2_ROOM_BOOKING
+      - M3_REPAIR
+      - ADMIN
+      title: BlockSource
+    BlockUpsert:
+      properties:
+        scope:
+          $ref: '#/components/schemas/BlockScope'
+        roomId:
+          type: integer
+          title: Roomid
+        seatIds:
+          items:
+            type: integer
+          type: array
+          title: Seatids
+          description: scope=SEATS 时必填
+        startsAt:
+          type: string
+          format: date-time
+          title: Startsat
+        endsAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Endsat
+          description: 为空表示直到释放，仅 M3_REPAIR、ADMIN 允许
+        kind:
+          $ref: '#/components/schemas/BlockKind'
+          default: ACTIVE
+        reason:
+          type: string
+          maxLength: 200
+          title: Reason
+      type: object
+      required:
+      - scope
+      - roomId
+      - startsAt
+      - reason
+      title: BlockUpsert
+      description: PUT /internal/m1/v1/blocks/{source}/{sourceRef}：以「来源 + 来源单号」幂等。
+    BookingCreate:
+      properties:
+        seatId:
+          type: integer
+          title: Seatid
+        date:
+          type: string
+          format: date
+          title: Date
+        startHour:
+          type: integer
+          maximum: 23.0
+          minimum: 0.0
+          title: Starthour
+          description: 整点（BR-01）
+        hours:
+          type: integer
+          maximum: 12.0
+          minimum: 1.0
+          title: Hours
+          description: 实际上限取参数 m1.booking.max_hours（BR-02）
+      type: object
+      required:
+      - seatId
+      - date
+      - startHour
+      - hours
+      title: BookingCreate
+    BookingOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        seatId:
+          type: integer
+          title: Seatid
+        seatCode:
+          type: string
+          title: Seatcode
+        roomId:
+          type: integer
+          title: Roomid
+        roomName:
+          type: string
+          title: Roomname
+        buildingName:
+          type: string
+          title: Buildingname
+        startsAt:
+          type: string
+          format: date-time
+          title: Startsat
+        endsAt:
+          type: string
+          format: date-time
+          title: Endsat
+        status:
+          $ref: '#/components/schemas/BookingStatus'
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+        checkinOpensAt:
+          type: string
+          format: date-time
+          title: Checkinopensat
+          description: 签到窗口开启时刻（BR-13）
+        checkinDeadline:
+          type: string
+          format: date-time
+          title: Checkindeadline
+          description: 签到截止时刻 T0 + 15 分钟（BR-12、13）
+        checkedInAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Checkedinat
+        checkinMethod:
+          anyOf:
+          - $ref: '#/components/schemas/CheckinMethod'
+          - type: 'null'
+        cancelledAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Cancelledat
+        cancelReason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cancelreason
+        cancelSource:
+          anyOf:
+          - $ref: '#/components/schemas/BlockSource'
+          - type: 'null'
+          description: 系统取消时的写入来源
+        cancelSourceRef:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cancelsourceref
+      type: object
+      required:
+      - id
+      - seatId
+      - seatCode
+      - roomId
+      - roomName
+      - buildingName
+      - startsAt
+      - endsAt
+      - status
+      - createdAt
+      - checkinOpensAt
+      - checkinDeadline
+      title: BookingOut
+    BookingStatus:
+      type: string
+      enum:
+      - PENDING
+      - CHECKED_IN
+      - COMPLETED
+      - CANCELLED
+      - NO_SHOW
+      - REVOKED
+      title: BookingStatus
+    CheckinIn:
+      properties:
+        code:
+          type: string
+          maxLength: 6
+          minLength: 6
+          title: Code
+        method:
+          $ref: '#/components/schemas/CheckinMethod'
+          description: CODE 输码 / SCAN 扫码
+          default: CODE
+      type: object
+      required:
+      - code
+      title: CheckinIn
+    CheckinMethod:
+      type: string
+      enum:
+      - CODE
+      - SCAN
+      - MANUAL
+      title: CheckinMethod
+    Dashboard:
+      properties:
+        at:
+          type: string
+          format: date-time
+          title: At
+        rooms:
+          items:
+            $ref: '#/components/schemas/RoomLive'
+          type: array
+          title: Rooms
+      type: object
+      required:
+      - at
+      - rooms
+      title: Dashboard
+    FavoriteSeat:
+      properties:
+        seatId:
+          type: integer
+          title: Seatid
+        seatCode:
+          type: string
+          title: Seatcode
+        roomId:
+          type: integer
+          title: Roomid
+        roomName:
+          type: string
+          title: Roomname
+      type: object
+      required:
+      - seatId
+      - seatCode
+      - roomId
+      - roomName
+      title: FavoriteSeat
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    MyViolations:
+      properties:
+        records:
+          items:
+            $ref: '#/components/schemas/ViolationOut'
+          type: array
+          title: Records
+        suspension:
+          $ref: '#/components/schemas/Suspension'
+      type: object
+      required:
+      - records
+      - suspension
+      title: MyViolations
+    Page_AdminBooking_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/AdminBooking'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        size:
+          type: integer
+          title: Size
+      type: object
+      required:
+      - items
+      - total
+      - page
+      - size
+      title: Page[AdminBooking]
+    Page_BookingOut_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/BookingOut'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        size:
+          type: integer
+          title: Size
+      type: object
+      required:
+      - items
+      - total
+      - page
+      - size
+      title: Page[BookingOut]
+    Page_RoomSeats_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/RoomSeats'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        size:
+          type: integer
+          title: Size
+      type: object
+      required:
+      - items
+      - total
+      - page
+      - size
+      title: Page[RoomSeats]
+    Page_ViolationOut_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/ViolationOut'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        size:
+          type: integer
+          title: Size
+      type: object
+      required:
+      - items
+      - total
+      - page
+      - size
+      title: Page[ViolationOut]
+    ReasonIn:
+      properties:
+        reason:
+          type: string
+          maxLength: 200
+          minLength: 1
+          title: Reason
+      type: object
+      required:
+      - reason
+      title: ReasonIn
+    RebookHint:
+      properties:
+        bookingId:
+          type: integer
+          title: Bookingid
+        seatId:
+          type: integer
+          title: Seatid
+        seatCode:
+          type: string
+          title: Seatcode
+        roomName:
+          type: string
+          title: Roomname
+        seatUsable:
+          type: boolean
+          title: Seatusable
+          description: 座位仍存在、启用且本人有权预约
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason
+          description: 不可用的原因，如「座位已注销」
+      type: object
+      required:
+      - bookingId
+      - seatId
+      - seatCode
+      - roomName
+      - seatUsable
+      title: RebookHint
+    RevokeIn:
+      properties:
+        reason:
+          type: string
+          maxLength: 200
+          minLength: 1
+          title: Reason
+      type: object
+      required:
+      - reason
+      title: RevokeIn
+    RoomAvailability:
+      properties:
+        roomId:
+          type: integer
+          title: Roomid
+        startsAt:
+          type: string
+          format: date-time
+          title: Startsat
+        endsAt:
+          type: string
+          format: date-time
+          title: Endsat
+        blocks:
+          items:
+            $ref: '#/components/schemas/BlockBrief'
+          type: array
+          title: Blocks
+        conflictingBookingCount:
+          type: integer
+          title: Conflictingbookingcount
+      type: object
+      required:
+      - roomId
+      - startsAt
+      - endsAt
+      - blocks
+      - conflictingBookingCount
+      title: RoomAvailability
+      description: GET /internal/m1/v1/rooms/{roomId}/availability（M1-INT-04）。
+    RoomBrowseItem:
+      properties:
+        roomId:
+          type: integer
+          title: Roomid
+        code:
+          type: string
+          title: Code
+        name:
+          type: string
+          title: Name
+        buildingName:
+          type: string
+          title: Buildingname
+        roomType:
+          $ref: '#/components/schemas/RoomType'
+        departmentId:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Departmentid
+        openingHours:
+          type: string
+          title: Openinghours
+          description: 当日开放时间，如 08:00-22:00；不开放为空串
+        totalSeats:
+          type: integer
+          title: Totalseats
+        availableSeats:
+          type: integer
+          title: Availableseats
+          description: 所选时段内按 §4.2 可约的座位数
+        tagCounts:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Tagcounts
+          description: 各标记的座位数
+      type: object
+      required:
+      - roomId
+      - code
+      - name
+      - buildingName
+      - roomType
+      - departmentId
+      - openingHours
+      - totalSeats
+      - availableSeats
+      - tagCounts
+      title: RoomBrowseItem
+    RoomFlag:
+      properties:
+        roomId:
+          type: integer
+          title: Roomid
+        roomName:
+          type: string
+          title: Roomname
+        kind:
+          type: string
+          enum:
+          - LOW_USAGE
+          - TIGHT
+          title: Kind
+        value:
+          type: number
+          title: Value
+      type: object
+      required:
+      - roomId
+      - roomName
+      - kind
+      - value
+      title: RoomFlag
+    RoomLive:
+      properties:
+        roomId:
+          type: integer
+          title: Roomid
+        roomName:
+          type: string
+          title: Roomname
+        buildingName:
+          type: string
+          title: Buildingname
+        total:
+          type: integer
+          title: Total
+        unavailable:
+          type: integer
+          title: Unavailable
+        bookedNotCheckedIn:
+          type: integer
+          title: Bookednotcheckedin
+        checkedIn:
+          type: integer
+          title: Checkedin
+        free:
+          type: integer
+          title: Free
+      type: object
+      required:
+      - roomId
+      - roomName
+      - buildingName
+      - total
+      - unavailable
+      - bookedNotCheckedIn
+      - checkedIn
+      - free
+      title: RoomLive
+    RoomSeats:
+      properties:
+        roomId:
+          type: integer
+          title: Roomid
+        roomCode:
+          type: string
+          title: Roomcode
+        roomName:
+          type: string
+          title: Roomname
+        buildingName:
+          type: string
+          title: Buildingname
+        availableCount:
+          type: integer
+          title: Availablecount
+        seats:
+          items:
+            $ref: '#/components/schemas/SeatResult'
+          type: array
+          title: Seats
+      type: object
+      required:
+      - roomId
+      - roomCode
+      - roomName
+      - buildingName
+      - availableCount
+      - seats
+      title: RoomSeats
+    RoomType:
+      type: string
+      enum:
+      - CLASSROOM
+      - LIBRARY_STUDY
+      - OTHER_STUDY
+      - MEETING
+      - PUBLIC_AREA
+      title: RoomType
+    ScreenCode:
+      properties:
+        roomId:
+          type: integer
+          title: Roomid
+        roomName:
+          type: string
+          title: Roomname
+        code:
+          type: string
+          title: Code
+          description: 6 位，去除易混字符，安全随机生成
+        qrUrl:
+          type: string
+          title: Qrurl
+          description: 扫码签到网址，含房间与签到码参数
+        validUntil:
+          type: string
+          format: date-time
+          title: Validuntil
+        refreshSeconds:
+          type: integer
+          title: Refreshseconds
+          description: 屏幕轮询间隔，换码后 30 秒内可见
+      type: object
+      required:
+      - roomId
+      - roomName
+      - code
+      - qrUrl
+      - validUntil
+      - refreshSeconds
+      title: ScreenCode
+    ScreenDevice:
+      properties:
+        id:
+          type: integer
+          title: Id
+        roomId:
+          type: integer
+          title: Roomid
+        name:
+          type: string
+          title: Name
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+        revokedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Revokedat
+      type: object
+      required:
+      - id
+      - roomId
+      - name
+      - createdAt
+      - revokedAt
+      title: ScreenDevice
+    ScreenDeviceCreate:
+      properties:
+        roomId:
+          type: integer
+          title: Roomid
+        name:
+          type: string
+          maxLength: 50
+          title: Name
+      type: object
+      required:
+      - roomId
+      - name
+      title: ScreenDeviceCreate
+    ScreenDeviceCreated:
+      properties:
+        id:
+          type: integer
+          title: Id
+        roomId:
+          type: integer
+          title: Roomid
+        name:
+          type: string
+          title: Name
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+        revokedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Revokedat
+        token:
+          type: string
+          title: Token
+          description: 设备令牌，只在创建时返回一次
+      type: object
+      required:
+      - id
+      - roomId
+      - name
+      - createdAt
+      - revokedAt
+      - token
+      title: ScreenDeviceCreated
+    SeatMap:
+      properties:
+        roomId:
+          type: integer
+          title: Roomid
+        rows:
+          type: integer
+          title: Rows
+        cols:
+          type: integer
+          title: Cols
+        cells:
+          items:
+            $ref: '#/components/schemas/SeatMapCell'
+          type: array
+          title: Cells
+      type: object
+      required:
+      - roomId
+      - rows
+      - cols
+      - cells
+      title: SeatMap
+    SeatMapCell:
+      properties:
+        row:
+          type: integer
+          title: Row
+        col:
+          type: integer
+          title: Col
+        seat:
+          $ref: '#/components/schemas/SeatResult'
+      type: object
+      required:
+      - row
+      - col
+      - seat
+      title: SeatMapCell
+    SeatResult:
+      properties:
+        seatId:
+          type: integer
+          title: Seatid
+        code:
+          type: string
+          title: Code
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+        state:
+          $ref: '#/components/schemas/SlotState'
+      type: object
+      required:
+      - seatId
+      - code
+      - tags
+      - state
+      title: SeatResult
+    SeatStateLog:
+      properties:
+        id:
+          type: integer
+          title: Id
+        seatId:
+          type: integer
+          title: Seatid
+        action:
+          type: string
+          title: Action
+        source:
+          $ref: '#/components/schemas/BlockSource'
+        sourceRef:
+          type: string
+          title: Sourceref
+        kind:
+          $ref: '#/components/schemas/BlockKind'
+        startsAt:
+          type: string
+          format: date-time
+          title: Startsat
+        endsAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Endsat
+        writtenBy:
+          type: string
+          title: Writtenby
+        at:
+          type: string
+          format: date-time
+          title: At
+      type: object
+      required:
+      - id
+      - seatId
+      - action
+      - source
+      - sourceRef
+      - kind
+      - startsAt
+      - endsAt
+      - writtenBy
+      - at
+      title: SeatStateLog
+    SeatTimeline:
+      properties:
+        seatId:
+          type: integer
+          title: Seatid
+        seatCode:
+          type: string
+          title: Seatcode
+        date:
+          type: string
+          format: date
+          title: Date
+        slots:
+          items:
+            $ref: '#/components/schemas/TimelineSlot'
+          type: array
+          title: Slots
+      type: object
+      required:
+      - seatId
+      - seatCode
+      - date
+      - slots
+      title: SeatTimeline
+    SeatTrace:
+      properties:
+        seatId:
+          type: integer
+          title: Seatid
+        at:
+          type: string
+          format: date-time
+          title: At
+        state:
+          $ref: '#/components/schemas/SlotState'
+        source:
+          anyOf:
+          - $ref: '#/components/schemas/BlockSource'
+          - type: 'null'
+        sourceRef:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sourceref
+        kind:
+          anyOf:
+          - $ref: '#/components/schemas/BlockKind'
+          - type: 'null'
+        writtenAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Writtenat
+        writtenBy:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Writtenby
+      type: object
+      required:
+      - seatId
+      - at
+      - state
+      - source
+      - sourceRef
+      - kind
+      - writtenAt
+      - writtenBy
+      title: SeatTrace
+    Setting:
+      properties:
+        key:
+          type: string
+          title: Key
+          description: 如 m1.booking.max_hours
+        value:
+          anyOf:
+          - type: integer
+          - type: boolean
+          title: Value
+        default:
+          anyOf:
+          - type: integer
+          - type: boolean
+          title: Default
+        min:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Min
+        max:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Max
+        description:
+          type: string
+          title: Description
+      type: object
+      required:
+      - key
+      - value
+      - default
+      - description
+      title: Setting
+    SettingsUpdate:
+      properties:
+        values:
+          additionalProperties:
+            anyOf:
+            - type: integer
+            - type: boolean
+          type: object
+          title: Values
+          description: 要修改的参数键与新值
+      type: object
+      required:
+      - values
+      title: SettingsUpdate
+    SlotState:
+      type: string
+      enum:
+      - CLOSED
+      - DISABLED
+      - REPAIR
+      - ROOM_OCCUPIED
+      - BOOKED
+      - AVAILABLE
+      title: SlotState
+      description: 座位在某时段对当前学生的状态，按 §4.2 的优先级取第一个命中项。
+    Stats:
+      properties:
+        openSeatHours:
+          type: number
+          title: Openseathours
+        bookingRate:
+          type: number
+          title: Bookingrate
+        usageRate:
+          type: number
+          title: Usagerate
+        checkinRate:
+          type: number
+          title: Checkinrate
+        noShowRate:
+          type: number
+          title: Noshowrate
+        dailyTurnover:
+          type: number
+          title: Dailyturnover
+        heatmap:
+          items:
+            items:
+              type: number
+            type: array
+          type: array
+          title: Heatmap
+          description: 7 × 24：星期 × 整点 的预约率
+      type: object
+      required:
+      - openSeatHours
+      - bookingRate
+      - usageRate
+      - checkinRate
+      - noShowRate
+      - dailyTurnover
+      - heatmap
+      title: Stats
+    Suspension:
+      properties:
+        active:
+          type: boolean
+          title: Active
+        until:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Until
+        recentCount:
+          type: integer
+          title: Recentcount
+        threshold:
+          type: integer
+          title: Threshold
+        windowDays:
+          type: integer
+          title: Windowdays
+      type: object
+      required:
+      - active
+      - until
+      - recentCount
+      - threshold
+      - windowDays
+      title: Suspension
+    TimelineSlot:
+      properties:
+        hour:
+          type: integer
+          title: Hour
+        state:
+          $ref: '#/components/schemas/SlotState'
+      type: object
+      required:
+      - hour
+      - state
+      title: TimelineSlot
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ViolationOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        bookingId:
+          type: integer
+          title: Bookingid
+        userId:
+          type: integer
+          title: Userid
+        studentNoMasked:
+          type: string
+          title: Studentnomasked
+          description: 脱敏学号，如 2621****32（NFR-11）
+        roomName:
+          type: string
+          title: Roomname
+        seatCode:
+          type: string
+          title: Seatcode
+        startsAt:
+          type: string
+          format: date-time
+          title: Startsat
+        endsAt:
+          type: string
+          format: date-time
+          title: Endsat
+        occurredAt:
+          type: string
+          format: date-time
+          title: Occurredat
+        reason:
+          type: string
+          title: Reason
+        revokedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Revokedat
+        revokeReason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revokereason
+      type: object
+      required:
+      - id
+      - bookingId
+      - userId
+      - studentNoMasked
+      - roomName
+      - seatCode
+      - startsAt
+      - endsAt
+      - occurredAt
+      - reason
+      title: ViolationOut
+    ViolationSummary:
+      properties:
+        userId:
+          type: integer
+          title: Userid
+        windowDays:
+          type: integer
+          title: Windowdays
+        count:
+          type: integer
+          title: Count
+        suspendedUntil:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Suspendeduntil
+      type: object
+      required:
+      - userId
+      - windowDays
+      - count
+      - suspendedUntil
+      title: ViolationSummary
+      description: GET /internal/m1/v1/users/{userId}/violation-summary（M1-INT-07）。
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      description: IAM 签发的访问令牌
+      scheme: bearer
