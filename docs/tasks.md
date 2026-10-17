@@ -10,7 +10,7 @@
 | A1 | M1 预约域 | M1-T01 ~ T07 | `services/seat`、`apps/web/src/app/(app)/m1`、`…/admin/m1` |
 | A2 | M1 履约域 | M1-T08 ~ T13 | 同上 |
 | B1 | M2 整教室预约与审批 | M2-T01 ~ T07 | `services/room`、`…/m2`、`…/admin/m2` |
-| B2 | 公共层：身份权限、审计；流水线 | D-T01 ~ T04、X-T02 | `services/platform/…/iam`、`…/audit`、`…/admin/iam`、`…/admin/audit` |
+| B2 | 公共层：身份权限、审计；持续部署 | D-T01 ~ T04、X-T02 | `services/platform/…/iam`、`…/audit`、`…/admin/iam`、`…/admin/audit` |
 | C1 | M3 物业报修工单 | M3-T01 ~ T06 | `services/repair`、`…/m3`、`…/admin/m3` |
 | C2 | 公共层：空间、通知；会话代理 | D-T05 ~ T08、X-T01 | `services/platform/…/space`、`…/notify`、`…/admin/space`、`…/admin/notify` |
 
@@ -26,7 +26,7 @@
 
 **关键路径**：M1-T01（占用块）是 M2、M3 写回的落点；D-T01（按角色查用户）是 M2 审批、M3 派单的前提；D-T05（通知）让所有提醒真正发出。这三项各自席位优先做。依赖未完成时按契约先开发：写回经 outbox 会自动重试，对方实现后自然打通；测试中用假实现替身。
 
-**已在骨架中实现**（可直接调用，也可作为写法参考）：登录 / 令牌 / 改口令 / 锁定（IAM-AUTH-01）、服务凭证与 JWKS（IAM-AUTH-03）、空间查询（`/api/space/v1/...`）、演示种子、前端登录页与账号页。
+**已在骨架中实现**（可直接调用，也可作为写法参考）：登录 / 令牌 / 改口令 / 锁定（IAM-AUTH-01）、服务凭证与 JWKS（IAM-AUTH-03）、空间查询（`/api/space/v1/...`）、演示种子、前端登录页与账号页、CI（`.github/workflows/ci.yml`）。
 
 ---
 
@@ -256,8 +256,12 @@
 - 代码：`agent-plugin/`（新建）；只调公开接口，用 `contracts/` 生成客户端
 - 要点：意图不明确时按接口返回的 `FIELD_REQUIRED`、`RULE_VIOLATION` 追问；安装与配置纳入流水线。
 
-### X-T02 CI/CD 流水线与部署（暂缓）
+### X-T02 持续部署：镜像、test 部署、发布与回滚
 `B2` `P0` `R2` · 依赖：无
-- 需求：NFR-04 ~ 06；任务书「交付流水线」；架构 §8
-- 代码：`.github/workflows/`、`deploy/`
-- 要点：合并请求跑 `make check`；合并后自动部署 test（部署锁、按顺序发布、健康检查）；prod 由版本标签触发并人工审批、可回滚。组长确认服务器后开工。
+- 需求：NFR-02 ~ 06、NFR-13；任务书「交付流水线」；架构 §8；ADR-014
+- 代码：`.github/workflows/`（新增部署工作流；`ci.yml` 已由组长完成，其两项必过检查不改名）、`deploy/`
+- 要点：
+  - 镜像：合并 main 后构建四个服务（`deploy/service.Dockerfile`）与前端（Nginx 托管静态文件）的镜像，tag = 提交 SHA，推送 GHCR；`/version` 与前端页脚显示版本号、SHA、构建时间。
+  - test：CI 通过后部署，顺序为迁移 → D → M1 → M2 / M3 → 前端，每步健康检查通过才继续；用并发组做部署锁，部署后跑 E2E（`apps/web/e2e`），跑完才释放。
+  - prod：推送版本标签触发，经 GitHub Environments 人工审批，晋升同一镜像；另建「部署指定标签」工作流用于回滚。
+  - 部署目标：服务器到位前，部署到 Actions runner 上的临时环境（Compose 起全栈，跑完即销毁），完整演示上述流程；服务器到位后只换部署目标（SSH + Secrets），工作流结构不变。

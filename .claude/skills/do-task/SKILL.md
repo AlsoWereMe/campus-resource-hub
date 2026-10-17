@@ -1,7 +1,7 @@
 ---
 name: do-task
 description: 按 docs/tasks.md 的任务卡完成一个开发任务：认领 Issue、建分支、读需求与契约、出方案并等人确认、实现与测试、更新追踪矩阵、提交并开合并请求。用户说「做任务 M1-T04」「领个任务」「继续做任务」时使用。
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(gh issue list:*), Bash(gh issue view:*)
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(gh issue list:*), Bash(gh issue view:*), Bash(gh pr checks:*)
 ---
 
 # 做任务
@@ -79,7 +79,8 @@ git push -u origin HEAD
 gh pr create --base main --title "<type>(<scope>): <任务编号> <标题>" --body-file <填好的模板>
 ```
 
-4. 告诉用户：合并请求链接、需要谁评审、还有哪些未完成或待确认。
+4. 等 CI 的 `backend`、`frontend` 两项检查通过（`gh pr checks --watch`）；失败就在本地复现、修复，按提交规范再提交推送。
+5. 告诉用户：合并请求链接、CI 结果、需要谁评审、还有哪些未完成或待确认。
 
 ## 禁止
 
