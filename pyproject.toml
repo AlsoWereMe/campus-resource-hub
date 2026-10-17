@@ -53,6 +53,9 @@ ignore = [
     "UP046",   # Pydantic 泛型模型沿用 Generic 写法
 ]
 
+[tool.ruff.lint.pycodestyle]
+max-line-length = 120  # 中文按双宽度计算，给说明文字留余量；格式化仍按 100
+
 [tool.ruff.lint.isort]
 known-first-party = ["campus_common", "platform_service", "seat_service", "room_service", "repair_service"]
 

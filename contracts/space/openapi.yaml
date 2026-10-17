@@ -21,6 +21,32 @@ paths:
                 title: Response Campuses Api Space V1 Campuses Get
       security:
       - HTTPBearer: []
+    post:
+      tags:
+      - 空间 · 房间管理
+      summary: 新增校区
+      operationId: create_campus_api_space_v1_campuses_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampusIn'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campus'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
   /api/space/v1/buildings:
     get:
       tags:
@@ -48,6 +74,32 @@ paths:
                 items:
                   $ref: '#/components/schemas/Building'
                 title: Response Buildings Api Space V1 Buildings Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - 空间 · 房间管理
+      summary: 新增楼宇
+      operationId: create_building_api_space_v1_buildings_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuildingIn'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Building'
         '422':
           description: Validation Error
           content:
@@ -181,6 +233,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - 空间 · 房间管理
+      summary: 新增房间（SPC-ROOM-01）
+      operationId: create_room_api_space_v1_rooms_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomIn'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomInfo'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/space/v1/rooms/{room_id}:
     get:
       tags:
@@ -196,6 +274,39 @@ paths:
         schema:
           type: integer
           title: Room Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomInfo'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - 空间 · 房间管理
+      summary: 修改房间属性（SPC-ROOM-01、04）
+      operationId: update_room_api_space_v1_rooms__room_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomPatch'
       responses:
         '200':
           description: Successful Response
@@ -287,6 +398,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - 空间 · 座位与标记
+      summary: 修改座位平面位置（SPC-SEAT-03，P2）
+      operationId: update_seat_api_space_v1_seats__seat_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: seat_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Seat Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatPatch'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatInfo'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/space/v1/tags:
     get:
       tags:
@@ -305,9 +449,466 @@ paths:
                 title: Response Tags Api Space V1 Tags Get
       security:
       - HTTPBearer: []
+    post:
+      tags:
+      - 空间 · 座位与标记
+      summary: 扩展标记字典（SPC-TAG-01，P2）
+      operationId: create_tag_api_space_v1_tags_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagIn'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/space/v1/rooms/{room_id}/study:
+    post:
+      tags:
+      - 空间 · 房间管理
+      summary: 开放为自习室或关闭自习（SPC-ROOM-02）
+      description: 关闭时若有未结束预约，先返回影响预览；确认后执行，受影响学生收到通知且不计违约。
+      operationId: set_study_open_api_space_v1_rooms__room_id__study_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudyOpenIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImpactPreview'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/space/v1/rooms/{room_id}/status:
+    post:
+      tags:
+      - 空间 · 房间管理
+      summary: 启用、停用、注销房间（SPC-ROOM-01、02）
+      operationId: set_room_status_api_space_v1_rooms__room_id__status_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImpactPreview'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/space/v1/rooms/{room_id}/booking-policy:
+    put:
+      tags:
+      - 空间 · 房间管理
+      summary: 整间预约属性（SPC-ROOM-05）
+      operationId: set_booking_policy_api_space_v1_rooms__room_id__booking_policy_put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingPolicyIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomInfo'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/space/v1/rooms/{room_id}/facilities:
+    put:
+      tags:
+      - 空间 · 房间管理
+      summary: 房间设施（SPC-ROOM-06，P2）
+      operationId: set_facilities_api_space_v1_rooms__room_id__facilities_put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacilitiesIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomInfo'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/space/v1/rooms/{room_id}/opening-hours:
+    put:
+      tags:
+      - 空间 · 开放时间
+      summary: 设置按星期的开放时间（SPC-ROOM-03）
+      description: 非整点被拒绝（BR-22）；缩短开放时间时按 SPC-ROOM-02 的确认流程处理受影响预约。
+      operationId: set_opening_hours_api_space_v1_rooms__room_id__opening_hours_put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpeningHoursIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImpactPreview'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/space/v1/rooms/{room_id}/closures:
+    get:
+      tags:
+      - 空间 · 开放时间
+      summary: 闭馆日列表（P1）
+      operationId: list_closures_api_space_v1_rooms__room_id__closures_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClosureOut'
+                title: Response List Closures Api Space V1 Rooms  Room Id  Closures Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - 空间 · 开放时间
+      summary: 新增闭馆日（P1）
+      operationId: add_closure_api_space_v1_rooms__room_id__closures_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClosureIn'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClosureOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/space/v1/rooms/{room_id}/closures/{closure_id}:
+    delete:
+      tags:
+      - 空间 · 开放时间
+      summary: 删除闭馆日（P1）
+      operationId: delete_closure_api_space_v1_rooms__room_id__closures__closure_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      - name: closure_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Closure Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/space/v1/seats:
+    post:
+      tags:
+      - 空间 · 座位与标记
+      summary: 登记座位（SPC-SEAT-01）
+      operationId: create_seat_api_space_v1_seats_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatIn'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatInfo'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/space/v1/rooms/{room_id}/seats/batch:
+    post:
+      tags:
+      - 空间 · 座位与标记
+      summary: 批量生成座位（SPC-SEAT-01，P1）
+      operationId: create_seats_batch_api_space_v1_rooms__room_id__seats_batch_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatBatchIn'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SeatInfo'
+                title: Response Create Seats Batch Api Space V1 Rooms  Room Id  Seats Batch Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/space/v1/rooms/{room_id}/seats/import:
+    post:
+      tags:
+      - 空间 · 座位与标记
+      summary: CSV 导入座位（SPC-SEAT-01，P2）
+      operationId: import_seats_api_space_v1_rooms__room_id__seats_import_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Room Id
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_import_seats_api_space_v1_rooms__room_id__seats_import_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SeatInfo'
+                title: Response Import Seats Api Space V1 Rooms  Room Id  Seats Import Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/space/v1/seats/status:
+    post:
+      tags:
+      - 空间 · 座位与标记
+      summary: 停用、恢复、注销座位（SPC-SEAT-01、02）
+      description: 停用在 M1 中表现为写入来源 ADMIN 的占用块；受影响预约按 BR-19 处理。
+      operationId: set_seats_status_api_space_v1_seats_status_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatStatusIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImpactPreview'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/space/v1/seats/tags:
+    post:
+      tags:
+      - 空间 · 座位与标记
+      summary: 批量添加、移除座位标记（SPC-TAG-01）
+      operationId: set_seat_tags_api_space_v1_seats_tags_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatTagsIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/SeatInfo'
+                type: array
+                title: Response Set Seat Tags Api Space V1 Seats Tags Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
 tags:
 - name: 空间 · 查询
   description: 校区、楼宇、房间、座位（已实现）
+- name: 空间 · 房间管理
+  description: 任务 D-T06
+- name: 空间 · 开放时间
+  description: 任务 D-T07
+- name: 空间 · 座位与标记
+  description: 任务 D-T08
 components:
   schemas:
     ApplicantType:
@@ -316,6 +917,30 @@ components:
       - STAFF
       - STUDENT_LEADER
       title: ApplicantType
+    Body_import_seats_api_space_v1_rooms__room_id__seats_import_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_import_seats_api_space_v1_rooms__room_id__seats_import_post
+    BookingPolicyIn:
+      properties:
+        wholeRoomBookable:
+          type: boolean
+          title: Wholeroombookable
+        allowedApplicantTypes:
+          items:
+            $ref: '#/components/schemas/ApplicantType'
+          type: array
+          title: Allowedapplicanttypes
+      type: object
+      required:
+      - wholeRoomBookable
+      title: BookingPolicyIn
     Building:
       properties:
         id:
@@ -337,6 +962,25 @@ components:
       - code
       - name
       title: Building
+    BuildingIn:
+      properties:
+        campusId:
+          type: integer
+          title: Campusid
+        code:
+          type: string
+          maxLength: 32
+          title: Code
+        name:
+          type: string
+          maxLength: 100
+          title: Name
+      type: object
+      required:
+      - campusId
+      - code
+      - name
+      title: BuildingIn
     Campus:
       properties:
         id:
@@ -354,6 +998,67 @@ components:
       - code
       - name
       title: Campus
+    CampusIn:
+      properties:
+        code:
+          type: string
+          maxLength: 32
+          title: Code
+        name:
+          type: string
+          maxLength: 100
+          title: Name
+      type: object
+      required:
+      - code
+      - name
+      title: CampusIn
+    ClosureIn:
+      properties:
+        date:
+          type: string
+          format: date
+          title: Date
+        reason:
+          type: string
+          maxLength: 200
+          title: Reason
+      type: object
+      required:
+      - date
+      - reason
+      title: ClosureIn
+    ClosureOut:
+      properties:
+        date:
+          type: string
+          format: date
+          title: Date
+        reason:
+          type: string
+          maxLength: 200
+          title: Reason
+        id:
+          type: integer
+          title: Id
+      type: object
+      required:
+      - date
+      - reason
+      - id
+      title: ClosureOut
+    FacilitiesIn:
+      properties:
+        facilities:
+          items:
+            type: string
+          type: array
+          title: Facilities
+          description: 如 PROJECTOR、SPEAKER、MICROPHONE（SPC-ROOM-06，P2）
+      type: object
+      required:
+      - facilities
+      title: FacilitiesIn
     HTTPValidationError:
       properties:
         detail:
@@ -363,6 +1068,42 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
+    ImpactPreview:
+      properties:
+        affectedBookingCount:
+          type: integer
+          title: Affectedbookingcount
+          description: 将被系统取消的未结束预约数（BR-19）
+        executed:
+          type: boolean
+          title: Executed
+          description: confirm=false 时只预览，不执行
+        room:
+          anyOf:
+          - $ref: '#/components/schemas/RoomInfo'
+          - type: 'null'
+      type: object
+      required:
+      - affectedBookingCount
+      - executed
+      title: ImpactPreview
+    OpeningHoursIn:
+      properties:
+        rules:
+          items:
+            $ref: '#/components/schemas/OpeningRule'
+          type: array
+          title: Rules
+          description: 起止必须为整点，同一天的区间不得重叠
+        confirm:
+          type: boolean
+          title: Confirm
+          description: 缩短导致冲突时先预览，确认后执行
+          default: false
+      type: object
+      required:
+      - rules
+      title: OpeningHoursIn
     OpeningRule:
       properties:
         weekday:
@@ -417,6 +1158,48 @@ components:
       - page
       - size
       title: Page[RoomInfo]
+    RoomIn:
+      properties:
+        buildingId:
+          type: integer
+          title: Buildingid
+        code:
+          type: string
+          maxLength: 32
+          title: Code
+          description: 全局唯一（SPC-ROOM-01）
+        name:
+          type: string
+          maxLength: 100
+          title: Name
+        floor:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Floor
+        roomType:
+          $ref: '#/components/schemas/RoomType'
+        capacity:
+          type: integer
+          minimum: 0.0
+          title: Capacity
+        ownerType:
+          $ref: '#/components/schemas/OwnerType'
+          default: SCHOOL
+        departmentId:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Departmentid
+          description: owner_type=DEPARTMENT 时必填
+      type: object
+      required:
+      - buildingId
+      - code
+      - name
+      - roomType
+      - capacity
+      title: RoomIn
     RoomInfo:
       properties:
         id:
@@ -502,6 +1285,40 @@ components:
       - studyOpen
       - wholeRoomBookable
       title: RoomInfo
+    RoomPatch:
+      properties:
+        name:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Name
+        floor:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Floor
+        roomType:
+          anyOf:
+          - $ref: '#/components/schemas/RoomType'
+          - type: 'null'
+        capacity:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Capacity
+        ownerType:
+          anyOf:
+          - $ref: '#/components/schemas/OwnerType'
+          - type: 'null'
+        departmentId:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Departmentid
+      type: object
+      title: RoomPatch
     RoomType:
       type: string
       enum:
@@ -511,6 +1328,54 @@ components:
       - MEETING
       - PUBLIC_AREA
       title: RoomType
+    SeatBatchIn:
+      properties:
+        count:
+          type: integer
+          maximum: 500.0
+          minimum: 1.0
+          title: Count
+          description: 按序号自动编号，与已有座位不冲突（P1）
+        perRow:
+          type: integer
+          maximum: 50.0
+          minimum: 1.0
+          title: Perrow
+          default: 8
+      type: object
+      required:
+      - count
+      title: SeatBatchIn
+    SeatIn:
+      properties:
+        roomId:
+          type: integer
+          title: Roomid
+        code:
+          type: string
+          maxLength: 48
+          title: Code
+          description: 全局唯一，建议「房间编号-序号」
+        row:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Row
+        col:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Col
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+      type: object
+      required:
+      - roomId
+      - code
+      title: SeatIn
     SeatInfo:
       properties:
         id:
@@ -546,6 +1411,68 @@ components:
       - code
       - status
       title: SeatInfo
+    SeatPatch:
+      properties:
+        row:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Row
+        col:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Col
+      type: object
+      title: SeatPatch
+    SeatStatusIn:
+      properties:
+        seatIds:
+          items:
+            type: integer
+          type: array
+          minItems: 1
+          title: Seatids
+        status:
+          $ref: '#/components/schemas/Status'
+        reason:
+          type: string
+          maxLength: 200
+          minLength: 1
+          title: Reason
+          description: 停用原因必填（SPC-SEAT-02）
+        confirm:
+          type: boolean
+          title: Confirm
+          default: false
+      type: object
+      required:
+      - seatIds
+      - status
+      - reason
+      title: SeatStatusIn
+    SeatTagsIn:
+      properties:
+        seatIds:
+          items:
+            type: integer
+          type: array
+          minItems: 1
+          title: Seatids
+        add:
+          items:
+            type: string
+          type: array
+          title: Add
+        remove:
+          items:
+            type: string
+          type: array
+          title: Remove
+      type: object
+      required:
+      - seatIds
+      title: SeatTagsIn
     Status:
       type: string
       enum:
@@ -553,6 +1480,46 @@ components:
       - DISABLED
       - DELETED
       title: Status
+    StatusIn:
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        confirm:
+          type: boolean
+          title: Confirm
+          default: false
+      type: object
+      required:
+      - status
+      title: StatusIn
+    StudyOpenIn:
+      properties:
+        studyOpen:
+          type: boolean
+          title: Studyopen
+        confirm:
+          type: boolean
+          title: Confirm
+          default: false
+      type: object
+      required:
+      - studyOpen
+      title: StudyOpenIn
+    TagIn:
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z_]{2,32}$
+          title: Code
+        name:
+          type: string
+          maxLength: 50
+          title: Name
+      type: object
+      required:
+      - code
+      - name
+      title: TagIn
     TagOut:
       properties:
         code:
