@@ -1,0 +1,60 @@
+name: 缺陷
+description: 自测、联调中发现的问题
+title: "[缺陷] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: 不要贴口令、令牌和真实个人信息。
+  - type: dropdown
+    id: module
+    attributes:
+      label: 模块
+      options:
+        - M1 自习座位预约
+        - M2 整教室预约与审批
+        - M3 物业报修工单
+        - D 身份权限
+        - D 空间
+        - D 通知
+        - D 审计
+        - 前端公共壳
+        - 公共库、本地环境或 CI
+    validations:
+      required: true
+  - type: input
+    id: requirement
+    attributes:
+      label: 相关需求编号
+      description: 不确定可留空
+      placeholder: M1-RSV-02
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 写到别人照做就能复现：账号、页面或接口、输入
+      placeholder: |
+        1. 以 student1 登录
+        2. 打开 /m1/search，选择明天 9:00 ~ 11:00
+        3. 点击预约
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望结果
+      description: 最好引用需求中的验收标准或业务规则
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际结果
+      description: 错误响应、截图或日志片段
+    validations:
+      required: true
+  - type: input
+    id: trace
+    attributes:
+      label: traceId
+      description: 错误响应体里的 traceId；按它在日志中能查到整条调用链（make logs s=<服务> | grep <traceId>）

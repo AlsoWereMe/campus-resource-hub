@@ -46,6 +46,13 @@ git switch -c <type>/<任务编号小写>-<英文短名>
 风险与待确认：需要用户决定的问题
 ```
 
+方案需要改契约、其他席位的目录、`libs/common`、迁移或需求，或者需求有歧义时：先告诉用户，经同意后按「变更请求」表单的结构开 Issue，把链接给用户，等组长在 Issue 中写出结论再继续：
+
+```bash
+gh issue create --label change --title "[变更] <一句话>" --body-file <填好的正文>
+# 正文各节：类型、发起席位、受影响的模块、相关需求编号与接口、问题与原因、候选方案与建议、是否兼容、结论（留空，组长填写）
+```
+
 ## 4. 实现（每个步骤一个提交）
 
 - 表：改 `infrastructure/models.py` → `make revision s=<服务> m="..."` → 检查迁移 → `make restart s=<服务>`。
@@ -79,4 +86,5 @@ gh pr create --base main --title "<type>(<scope>): <任务编号> <标题>" --bo
 
 - 跳过第 3 步的确认直接写代码。
 - 修改其他席位的目录、`libs/common`、迁移或契约而不先问。
+- 需要组长决定的事只在对话里讨论，不开变更请求 Issue。
 - 自行解决合并冲突（交给人）；force push；`--no-verify`。

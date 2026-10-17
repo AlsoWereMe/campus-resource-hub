@@ -1,0 +1,76 @@
+name: 变更请求
+description: 要改契约、改别的模块或公共层、改需求或业务规则，或者需求有歧义需要澄清
+title: "[变更] "
+labels: [change]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        讨论在本 Issue 中进行，组长写出结论后再动手。实现它的合并请求写 `Refs #本 Issue`；
+        涉及需求或架构的，结论同步到需求文档或 `docs/adr.md`（AGENTS.md §8）。
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 类型
+      options:
+        - 接口或消息契约
+        - 其他模块或公共层的代码（含 libs/common、迁移）
+        - 需求或业务规则
+        - 需求澄清（有歧义）
+    validations:
+      required: true
+  - type: dropdown
+    id: seat
+    attributes:
+      label: 发起席位
+      options: [A1, A2, B1, B2, C1, C2, 组长]
+    validations:
+      required: true
+  - type: checkboxes
+    id: affected
+    attributes:
+      label: 受影响的模块
+      description: 勾选的模块负责人需要参与评审
+      options:
+        - label: M1
+        - label: M2
+        - label: M3
+        - label: D 身份权限与审计（B2）
+        - label: D 空间与通知（C2）
+        - label: 前端公共壳、公共库
+  - type: input
+    id: refs
+    attributes:
+      label: 相关需求编号、接口
+      placeholder: M1-INT-01；PUT /internal/m1/v1/blocks
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: 问题与原因
+      description: 现状是什么，为什么要改或哪里有歧义
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: 候选方案与建议
+      description: 至少一个；有多个时写出取舍，并给出建议
+    validations:
+      required: true
+  - type: dropdown
+    id: compat
+    attributes:
+      label: 是否兼容
+      options:
+        - 兼容（只新增接口或可选字段）
+        - 不兼容（BREAKING CHANGE，需约定切换顺序）
+        - 不涉及接口
+    validations:
+      required: true
+  - type: textarea
+    id: decision
+    attributes:
+      label: 结论
+      description: 新建时留空。组长在讨论后编辑本 Issue 填写：采用的方案、谁来改、要同步的文档
